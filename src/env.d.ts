@@ -13,6 +13,8 @@ interface ImportMetaEnv {
   readonly TELEGRAM_BOT_TOKEN: string;
   readonly TELEGRAM_PROXY: string;
   readonly TELEGRAM_WEBHOOK_SECRET: string;
+  readonly TELEGRAM_MODE: string;
+  readonly PUBLIC_SITE_URL: string;
   readonly CRM_WEBHOOK_URL: string;
   readonly ADMIN_PASSWORD: string;
 }

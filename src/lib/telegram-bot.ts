@@ -10,6 +10,12 @@ export interface TelegramUpdateMessage {
   text?: string;
 }
 
+function isStartCommand(text: string): boolean {
+  const lower = text.toLowerCase();
+  return lower === "/start" || lower === "start" || lower.startsWith("/start ");
+}
+
+/** Открытый доступ: любой, кто пишет боту, становится админом уведомлений. */
 export async function handleTelegramMessage(
   message: TelegramUpdateMessage,
   send: (chatId: number, text: string) => Promise<void>,
@@ -17,13 +23,25 @@ export async function handleTelegramMessage(
   const chat = message.chat;
   const text = message.text?.trim() ?? "";
 
-  if (text === "/start" || text.toLowerCase() === "start") {
+  if (isStartCommand(text) || text) {
     const isNew = addTelegramAdmin(chat);
-    await send(chat.id, isNew ? BOT_ADMIN_CONNECTED_TEXT : BOT_ALREADY_CONNECTED_TEXT);
+    if (isNew) {
+      await send(chat.id, BOT_ADMIN_CONNECTED_TEXT);
+      return;
+    }
+    if (isStartCommand(text)) {
+      await send(chat.id, BOT_ALREADY_CONNECTED_TEXT);
+      return;
+    }
+  }
+
+  if (text.startsWith("/help") || text.startsWith("/")) {
+    await send(chat.id, BOT_HELP_TEXT);
     return;
   }
 
-  if (text.startsWith("/")) {
-    await send(chat.id, BOT_HELP_TEXT);
+  if (!text) {
+    const isNew = addTelegramAdmin(chat);
+    if (isNew) await send(chat.id, BOT_ADMIN_CONNECTED_TEXT);
   }
 }

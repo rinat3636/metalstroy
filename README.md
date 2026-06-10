@@ -26,13 +26,10 @@ PUBLIC_SITE_EMAIL=sales@...
 ```
 
 3. **Settings** → **Networking** → **Generate Domain** (например `profstal-invest.up.railway.app`)
-4. После деплоя — webhook бота (с ПК с VPN или с Railway shell):
+4. После деплоя бот **запускается сам** (long polling на сервере). Webhook вручную не нужен.
+5. Любой пишет боту `/start` — становится админом, заявки с сайта приходят в Telegram.
 
-```powershell
-npm run telegram:webhook:set -- https://ваш-домен.railway.app
-```
-
-5. Админ пишет боту `/start` — заявки с сайта приходят в Telegram.
+Опционально `TELEGRAM_MODE=webhook` + `npm run telegram:webhook:set -- https://ваш-домен.railway.app`
 
 > **Volumes на Railway** (чтобы правки админки не пропадали при redeploy):
 > - `/app/data` — `telegram-admins.json`, `catalog.json`
@@ -62,17 +59,17 @@ npm run preview
 node ./dist/server/entry.mjs
 ```
 
-## Telegram-бот (только админы)
+## Telegram-бот (открытый доступ)
 
-Один бот, одна роль — **администратор**. `TELEGRAM_CHAT_ID` не нужен.
+`TELEGRAM_CHAT_ID` не нужен. **Любой**, кто запускает бота (`/start` или любое сообщение), получает уведомления о заявках.
 
-1. Токен от [@BotFather](https://t.me/BotFather) → в `.env`:
+1. Токен от [@BotFather](https://t.me/BotFather) → в `.env` / Railway Variables:
 
 ```
 TELEGRAM_BOT_TOKEN=...
 ```
 
-2. Каждый админ пишет боту `/start` — подключается к уведомлениям.
+2. На Railway бот отвечает сам после деплоя. Локально — `npm run telegram:poll`.
 
 3. Проверка связи с Telegram (важно для ДНР/РФ):
 
