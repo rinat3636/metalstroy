@@ -34,6 +34,14 @@ export function getCategoryBySlug(slug: string): Category | undefined {
   return categories.find((c) => c.slug === slug);
 }
 
+/** Обложка категории — только фото из товаров этой категории */
+export function getCategoryCoverImage(slug: string): string | undefined {
+  const category = getCategoryBySlug(slug);
+  if (!category?.image) return undefined;
+  const valid = products.some((p) => p.categorySlug === slug && p.image === category.image);
+  return valid ? category.image : undefined;
+}
+
 export function getCityBySlug(slug: string): City | undefined {
   return cities.find((c) => c.slug === slug);
 }
