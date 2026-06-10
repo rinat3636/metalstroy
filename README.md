@@ -2,6 +2,17 @@
 
 Сайт на Astro: каталог металлопроката и стройматериалов, региональное SEO, список заявки и отправка лидов в Telegram.
 
+## Репозиторий
+
+Код для GitHub: [rinat3636/metalstroy](https://github.com/rinat3636/metalstroy)
+
+Загрузка (заменяет `main` в metalstroy):
+
+```powershell
+$env:GITHUB_TOKEN = "ваш_токен"   # Contents: Read and write
+.\scripts\push-metalstroy.ps1
+```
+
 ## Запуск
 
 ```powershell
