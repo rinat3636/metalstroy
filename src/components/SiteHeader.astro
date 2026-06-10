@@ -1,4 +1,5 @@
 ---
+import HeaderSearch from "@/components/HeaderSearch";
 import { site } from "@/lib/data";
 import { withBase } from "@/lib/paths";
 ---
@@ -15,6 +16,7 @@ import { withBase } from "@/lib/paths";
       <a href={withBase("/about/")}>О компании</a>
       <a href={withBase("/contacts/")}>Контакты</a>
     </nav>
+    <HeaderSearch client:load />
     <div class="header-actions">
       <a class="phone-link" href={`tel:${site.phone.replace(/\s/g, "")}`} data-goal="phone_click">{site.phone}</a>
       <button class="btn btn--ghost quote-badge" type="button" id="openQuoteBtn" aria-label="Список заявки">
@@ -55,7 +57,6 @@ import { withBase } from "@/lib/paths";
   const backdrop = document.getElementById("sideMenuBackdrop");
   const panel = document.getElementById("sideMenu");
   const closeBtn = document.getElementById("sideMenuClose");
-
   function setMenuOpen(open) {
     panel?.classList.toggle("is-open", open);
     backdrop?.toggleAttribute("hidden", !open);

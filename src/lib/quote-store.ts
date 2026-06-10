@@ -35,6 +35,15 @@ export function removeFromQuote(sku: string): QuoteItem[] {
   return items;
 }
 
+export function updateQuoteQuantity(sku: string, quantity: number): QuoteItem[] {
+  if (quantity < 1) return removeFromQuote(sku);
+  const items = readQuote().map((item) =>
+    item.sku === sku ? { ...item, quantity } : item,
+  );
+  writeQuote(items);
+  return items;
+}
+
 export function clearQuote(): void {
   writeQuote([]);
 }

@@ -47,7 +47,7 @@ export const POST: APIRoute = async ({ request, clientAddress }) => {
     });
   }
 
-  let body: LeadPayload & { website?: string };
+  let body: LeadPayload & { company?: string };
   try {
     body = await request.json();
   } catch {
@@ -57,7 +57,7 @@ export const POST: APIRoute = async ({ request, clientAddress }) => {
     });
   }
 
-  if (body.website) {
+  if (body.company?.trim()) {
     return new Response(JSON.stringify({ ok: true }), { status: 200 });
   }
 

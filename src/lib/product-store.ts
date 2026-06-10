@@ -1,5 +1,6 @@
 import { readFileSync, writeFileSync, existsSync } from "node:fs";
 import { join } from "node:path";
+import { filterProducts } from "./search";
 import type { Category, Product } from "./types";
 import { buildProduct, buildProductSlug, nextSku, productToCatalogRaw, type ProductInput } from "./product-utils";
 
@@ -31,12 +32,7 @@ export function getProductBySku(sku: string): Product | undefined {
 }
 
 export function searchProducts(query: string): Product[] {
-  const q = query.trim().toLowerCase();
-  if (!q) return loadProducts();
-  return loadProducts().filter((p) => {
-    const haystack = `${p.sku} ${p.title} ${p.category} ${p.subcategory ?? ""} ${p.specsRaw}`.toLowerCase();
-    return haystack.includes(q) || p.sku.toLowerCase() === q;
-  });
+  return filterProducts(loadProducts(), query);
 }
 
 function recalcCategories(products: Product[]): Category[] {

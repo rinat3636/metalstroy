@@ -2,24 +2,47 @@
 import Layout from "@/layouts/Layout.astro";
 import CatalogBrowser from "@/components/CatalogBrowser";
 import Breadcrumbs from "@/components/Breadcrumbs.astro";
-import { categories, productImageUrl, getCategoryCoverImage } from "@/lib/data";
+import { productImageUrl, getCategoryCoverImage } from "@/lib/data";
 import { getCategoryBySlug, loadProducts } from "@/lib/product-store";
 import { withBase } from "@/lib/paths";
 
-export function getStaticPaths() {
-  return categories.map((category) => ({ params: { categorySlug: category.slug } }));
-}
+export const prerender = false;
 
 const { categorySlug } = Astro.params;
 const category = getCategoryBySlug(categorySlug!);
 if (!category) return Astro.redirect(withBase("/catalog/"));
 
 const categoryProducts = loadProducts().filter((p) => p.categorySlug === categorySlug);
+
+const breadcrumbSchema = {
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  itemListElement: [
+    { "@type": "ListItem", position: 1, name: "Главная", item: Astro.site },
+    { "@type": "ListItem", position: 2, name: "Каталог", item: new URL(withBase("/catalog/"), Astro.site).href },
+    { "@type": "ListItem", position: 3, name: category.name },
+  ],
+};
+
+const itemListSchema = {
+  "@context": "https://schema.org",
+  "@type": "ItemList",
+  name: category.name,
+  numberOfItems: categoryProducts.length,
+  itemListElement: categoryProducts.slice(0, 20).map((p, i) => ({
+    "@type": "ListItem",
+    position: i + 1,
+    url: new URL(withBase(`/catalog/${p.categorySlug}/${p.slug}/`), Astro.site).href,
+    name: p.title,
+  })),
+};
 ---
 
 <Layout
   title={`${category.name} — купить в ДНР`}
   description={category.description}
+  schema={[breadcrumbSchema, itemListSchema]}
+  ogImage={getCategoryCoverImage(categorySlug!) ? productImageUrl(getCategoryCoverImage(categorySlug!)) : undefined}
 >
   <div class="page-header">
     <div class="container page-header__split">

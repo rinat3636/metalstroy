@@ -1,4 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
+import SearchCombobox from "@/components/SearchCombobox";
+import { filterProducts } from "@/lib/search";
 import { withBase } from "@/lib/paths";
 import type { Product } from "@/lib/types";
 
@@ -50,6 +52,22 @@ export default function CatalogBrowser({ products: initialProducts = [], initial
     setCategory(initialCategory);
   }, [initialCategory]);
 
+  useEffect(() => {
+    const q = new URLSearchParams(window.location.search).get("q");
+    if (q) {
+      setQuery(q);
+      setVisible(16);
+    }
+  }, []);
+
+  useEffect(() => {
+    const url = new URL(window.location.href);
+    const trimmed = query.trim();
+    if (trimmed) url.searchParams.set("q", trimmed);
+    else url.searchParams.delete("q");
+    window.history.replaceState({}, "", `${url.pathname}${url.search}${url.hash}`);
+  }, [query]);
+
   const categories = useMemo(() => {
     const map = new Map<string, number>();
     products.forEach((p) => map.set(p.category, (map.get(p.category) ?? 0) + 1));
@@ -57,16 +75,15 @@ export default function CatalogBrowser({ products: initialProducts = [], initial
   }, [products]);
 
   const filtered = useMemo(() => {
-    const q = query.trim().toLowerCase();
-    return products.filter((p) => {
+    const scoped = products.filter((p) => {
       const matchCat =
         category === "all" ||
         p.category === category ||
         p.categorySlug === category;
       const matchStock = stock === "all" || p.stock === stock;
-      const haystack = `${p.title} ${p.category} ${p.subcategory ?? ""} ${p.specsRaw} ${p.sku}`.toLowerCase();
-      return matchCat && matchStock && (!q || haystack.includes(q));
+      return matchCat && matchStock;
     });
+    return query.trim() ? filterProducts(scoped, query) : scoped;
   }, [products, query, category, stock]);
 
   const shown = filtered.slice(0, visible);
@@ -74,18 +91,16 @@ export default function CatalogBrowser({ products: initialProducts = [], initial
   return (
     <>
       <div className="catalog-tools">
-        <label className="field">
-          <span>Поиск</span>
-          <input
-            type="search"
-            placeholder="Например: труба 40х20, арматура, профнастил"
-            value={query}
-            onChange={(e) => {
-              setQuery(e.target.value);
-              setVisible(16);
-            }}
-          />
-        </label>
+        <SearchCombobox
+          variant="field"
+          mode="filter"
+          placeholder="Например: труба 40х20, арматура, профнастил"
+          initialQuery={query}
+          onQueryChange={(value) => {
+            setQuery(value);
+            setVisible(16);
+          }}
+        />
         <label className="field">
           <span>Категория</span>
           <select

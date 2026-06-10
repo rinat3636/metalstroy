@@ -2,7 +2,6 @@
 import Layout from "@/layouts/Layout.astro";
 import CatalogBrowser from "@/components/CatalogBrowser";
 import Breadcrumbs from "@/components/Breadcrumbs.astro";
-import { products } from "@/lib/data";
 ---
 
 <Layout
@@ -22,7 +21,7 @@ import { products } from "@/lib/data";
   </div>
   <section class="section section--tight">
     <div class="container">
-      <CatalogBrowser client:load products={products} />
+      <CatalogBrowser client:load />
     </div>
   </section>
 </Layout>

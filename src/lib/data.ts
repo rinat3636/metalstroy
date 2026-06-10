@@ -15,12 +15,15 @@ export const site = {
   tagline: "Металлопрокат и стройматериалы в ДНР",
   phone: import.meta.env.PUBLIC_SITE_PHONE ?? "+7 (949) 000-00-00",
   email: import.meta.env.PUBLIC_SITE_EMAIL ?? "sales@profstal-invest.ru",
-  address: "г. Донецк, ДНР",
+  address: import.meta.env.PUBLIC_SITE_ADDRESS ?? "г. Донецк, ДНР",
   addressNote: "Точный адрес склада и схема проезда — после подтверждения заказа",
   schedule: "Пн–Сб: 8:00–18:00",
   metrikaId: import.meta.env.PUBLIC_YANDEX_METRIKA_ID ?? "",
-  telegram: "https://t.me/proffinvest23_bot",
-  whatsapp: "https://wa.me/79490000000",
+  telegram: import.meta.env.PUBLIC_SITE_TELEGRAM ?? "https://t.me/proffinvest23_bot",
+  whatsapp: import.meta.env.PUBLIC_SITE_WHATSAPP ?? "https://wa.me/79490000000",
+  inn: import.meta.env.PUBLIC_SITE_INN ?? "",
+  kpp: import.meta.env.PUBLIC_SITE_KPP ?? "",
+  ogrn: import.meta.env.PUBLIC_SITE_OGRN ?? "",
 };
 
 export function getProductBySlug(slug: string): Product | undefined {
@@ -36,6 +39,13 @@ export function getFeaturedProducts(): Product[] {
   return (featuredSkus as string[])
     .map((sku) => getProductBySku(sku))
     .filter((p): p is Product => !!p);
+}
+
+/** Похожие товары из той же категории */
+export function getRelatedProducts(product: Product, limit = 4): Product[] {
+  return products
+    .filter((p) => p.categorySlug === product.categorySlug && p.sku !== product.sku)
+    .slice(0, limit);
 }
 
 export function getProductsByCategory(categorySlug: string): Product[] {

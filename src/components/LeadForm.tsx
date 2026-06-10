@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import type { QuoteItem } from "@/lib/types";
-import { readQuote } from "@/lib/quote-store";
+import { clearQuote, readQuote } from "@/lib/quote-store";
+import { withBase } from "@/lib/paths";
 
 interface Props {
   defaultCity?: string;
@@ -11,6 +12,7 @@ export default function LeadForm({ defaultCity = "" }: Props) {
   const [phone, setPhone] = useState("");
   const [city, setCity] = useState(defaultCity);
   const [message, setMessage] = useState("");
+  const [company, setCompany] = useState("");
   const [status, setStatus] = useState<{ type: "ok" | "err"; text: string } | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -36,7 +38,7 @@ export default function LeadForm({ defaultCity = "" }: Props) {
     });
 
     try {
-      const res = await fetch("/api/lead", {
+      const res = await fetch(withBase("/api/lead"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -47,15 +49,17 @@ export default function LeadForm({ defaultCity = "" }: Props) {
           items: readQuote(),
           source: window.location.pathname,
           utm,
-          website: "",
+          company,
         }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error ?? "Ошибка отправки");
+      clearQuote();
       setStatus({ type: "ok", text: `Заявка отправлена. Менеджер перезвонит на ${phone}.` });
       setName("");
       setPhone("");
       setMessage("");
+      setCompany("");
       window.dispatchEvent(new CustomEvent("analytics-goal", { detail: "lead_submit" }));
     } catch (err) {
       setStatus({
@@ -69,6 +73,17 @@ export default function LeadForm({ defaultCity = "" }: Props) {
 
   return (
     <form className="request-form" id="request" onSubmit={handleSubmit}>
+      <label className="field hp-field" aria-hidden="true">
+        <span>Компания</span>
+        <input
+          type="text"
+          name="company"
+          tabIndex={-1}
+          autoComplete="off"
+          value={company}
+          onChange={(e) => setCompany(e.target.value)}
+        />
+      </label>
       <label className="field">
         <span>Имя</span>
         <input value={name} onChange={(e) => setName(e.target.value)} placeholder="Иван" />

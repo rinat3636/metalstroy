@@ -6,6 +6,8 @@ import { withBase } from "@/lib/paths";
 <div class="mobile-bar">
   <div class="container mobile-bar__inner">
     <a class="btn btn--steel" href={`tel:${site.phone.replace(/\s/g, "")}`} data-goal="phone_click">Позвонить</a>
-    <a class="btn btn--accent" href={withBase("/contacts/#request")}>Заявка на расчёт</a>
+    <a class="btn btn--outline mobile-bar__msg" href={site.telegram} target="_blank" rel="noopener noreferrer" data-goal="telegram_click">Telegram</a>
+    <a class="btn btn--outline mobile-bar__msg" href={site.whatsapp} target="_blank" rel="noopener noreferrer" data-goal="whatsapp_click">WhatsApp</a>
+    <a class="btn btn--accent" href={withBase("/contacts/#request")}>Заявка</a>
   </div>
 </div>

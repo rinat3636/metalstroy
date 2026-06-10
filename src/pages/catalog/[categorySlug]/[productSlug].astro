@@ -2,44 +2,42 @@
 import Layout from "@/layouts/Layout.astro";
 import Breadcrumbs from "@/components/Breadcrumbs.astro";
 import AddToQuoteButton from "@/components/AddToQuoteButton";
-import {
-  getCategoryBySlug,
-  getProductBySlugs,
-} from "@/lib/product-store";
+import { getCategoryBySlug, getProductBySlugs, loadProducts } from "@/lib/product-store";
 import {
   formatPrice,
   stockLabel,
   productImageUrl,
-  products,
   site,
 } from "@/lib/data";
 import { withBase } from "@/lib/paths";
 
-export function getStaticPaths() {
-  return products.map((product) => ({
-    params: { categorySlug: product.categorySlug, productSlug: product.slug },
-  }));
-}
+export const prerender = false;
 
 const { categorySlug, productSlug } = Astro.params;
 const product = getProductBySlugs(categorySlug!, productSlug!);
 if (!product) return Astro.redirect(withBase("/catalog/"));
 
 const category = getCategoryBySlug(categorySlug!);
+const related = loadProducts()
+  .filter((p) => p.categorySlug === product.categorySlug && p.sku !== product.sku)
+  .slice(0, 4);
+
 const stockClass =
   product.stock === "in_stock" ? "badge badge--ok" :
   product.stock === "on_order" ? "badge badge--warn" : "badge badge--no";
 
-const productSchema = {
+const productUrl = new URL(withBase(`/catalog/${categorySlug}/${product.slug}/`), Astro.site).href;
+
+const productSchema: Record<string, unknown> = {
   "@context": "https://schema.org",
   "@type": "Product",
   name: product.title,
   sku: product.sku,
+  url: productUrl,
   description: product.description.slice(0, 300),
   image: new URL(productImageUrl(product.image), Astro.site).href,
   offers: {
     "@type": "Offer",
-    price: product.price ?? undefined,
     priceCurrency: "RUB",
     availability:
       product.stock === "in_stock"
@@ -51,6 +49,10 @@ const productSchema = {
   },
 };
 
+if (product.price != null) {
+  (productSchema.offers as Record<string, unknown>).price = product.price;
+}
+
 const breadcrumbSchema = {
   "@context": "https://schema.org",
   "@type": "BreadcrumbList",
@@ -58,7 +60,7 @@ const breadcrumbSchema = {
     { "@type": "ListItem", position: 1, name: "Главная", item: Astro.site },
     { "@type": "ListItem", position: 2, name: "Каталог", item: new URL(withBase("/catalog/"), Astro.site).href },
     { "@type": "ListItem", position: 3, name: category?.name, item: new URL(withBase(`/catalog/${categorySlug}/`), Astro.site).href },
-    { "@type": "ListItem", position: 4, name: product.title },
+    { "@type": "ListItem", position: 4, name: product.title, item: productUrl },
   ],
 };
 ---
@@ -67,6 +69,8 @@ const breadcrumbSchema = {
   title={product.title}
   description={product.description.slice(0, 160)}
   schema={[productSchema, breadcrumbSchema]}
+  ogImage={productImageUrl(product.image)}
+  ogType="product"
 >
   <div class="page-header">
     <div class="container">
@@ -81,7 +85,7 @@ const breadcrumbSchema = {
   <section class="section section--tight">
     <div class="container product-detail">
       <div class="product-detail__gallery">
-        <img src={productImageUrl(product.image)} alt={product.title} loading="eager" />
+        <img src={productImageUrl(product.image)} alt={product.title} loading="eager" width="800" height="600" />
       </div>
       <div>
         <div style="display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 0.75rem;">
@@ -118,4 +122,27 @@ const breadcrumbSchema = {
       </div>
     </div>
   </section>
+
+  {related.length > 0 && (
+    <section class="section section--tight">
+      <div class="container">
+        <p class="eyebrow">Категория</p>
+        <h2 class="section-title" style="font-size: 1.375rem;">Похожие позиции</h2>
+        <div class="product-grid" style="margin-top: 1rem;">
+          {related.map((item) => (
+            <a href={withBase(`/catalog/${item.categorySlug}/${item.slug}/`)} class="related-card">
+              <div class="related-card__media">
+                <img src={productImageUrl(item.image)} alt={item.title} loading="lazy" width="200" height="150" />
+              </div>
+              <div class="related-card__body">
+                <span class="badge product-card__sku">{item.sku}</span>
+                <h3>{item.title}</h3>
+                <p>{formatPrice(item.price)}</p>
+              </div>
+            </a>
+          ))}
+        </div>
+      </div>
+    </section>
+  )}
 </Layout>

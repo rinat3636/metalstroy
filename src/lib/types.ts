@@ -37,6 +37,8 @@ export interface City {
   title: string;
   text: string;
   delivery: string;
+  highlights?: string[];
+  popularSkus?: string[];
 }
 
 export interface QuoteItem {

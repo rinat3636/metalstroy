@@ -1,6 +1,8 @@
 ---
 import { site } from "@/lib/data";
 import { withBase } from "@/lib/paths";
+
+const hasRequisites = site.inn || site.kpp || site.ogrn;
 ---
 
 <footer class="site-footer" id="contacts">
@@ -13,17 +15,26 @@ import { withBase } from "@/lib/paths";
       <strong>Контакты</strong>
       <a href={`tel:${site.phone.replace(/\s/g, "")}`} data-goal="phone_click">{site.phone}</a>
       <a href={`mailto:${site.email}`}>{site.email}</a>
+      <a href={site.telegram} target="_blank" rel="noopener noreferrer">Telegram</a>
+      <a href={site.whatsapp} target="_blank" rel="noopener noreferrer">WhatsApp</a>
       <span>{site.address}</span>
       <span>{site.schedule}</span>
     </address>
     <div>
       <strong>Реквизиты</strong>
-      <p>
-        {site.legalName}<br />
-        ИНН: {site.inn}<br />
-        КПП: {site.kpp}<br />
-        ОГРН: {site.ogrn}
-      </p>
+      {hasRequisites ? (
+        <p>
+          {site.legalName}<br />
+          {site.inn && <>ИНН: {site.inn}<br /></>}
+          {site.kpp && <>КПП: {site.kpp}<br /></>}
+          {site.ogrn && <>ОГРН: {site.ogrn}</>}
+        </p>
+      ) : (
+        <p>
+          {site.legalName}<br />
+          Полные реквизиты для счёта — по запросу менеджера.
+        </p>
+      )}
     </div>
   </div>
 </footer>

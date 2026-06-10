@@ -34,7 +34,10 @@ npm run telegram:webhook:set -- https://ваш-домен.railway.app
 
 5. Админ пишет боту `/start` — заявки с сайта приходят в Telegram.
 
-> Том `/app/data` (админы Telegram, правки каталога): в Railway добавьте **Volume**, mount path `/app/data`.
+> **Volumes на Railway** (чтобы правки админки не пропадали при redeploy):
+> - `/app/data` — `telegram-admins.json`, `catalog.json`
+> - `/app/src/data` — `products.json`, `categories.json`
+> - `/app/public/assets/catalog-images` — загруженные фото товаров
 
 ## Запуск
 

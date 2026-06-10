@@ -7,6 +7,7 @@ import {
   quoteCount,
   readQuote,
   removeFromQuote,
+  updateQuoteQuantity,
 } from "@/lib/quote-store";
 
 export default function QuoteApp() {
@@ -70,8 +71,24 @@ export default function QuoteApp() {
                 <div style={{ flex: 1 }}>
                   <div className="quote-item__sku">{item.sku}</div>
                   <div style={{ fontSize: "0.875rem", fontWeight: 600 }}>{item.title}</div>
-                  <div style={{ fontSize: "0.8125rem", color: "var(--color-ink-muted)" }}>
-                    Кол-во: {item.quantity}
+                  <div className="quote-item__qty">
+                    <button
+                      type="button"
+                      className="quote-qty-btn"
+                      aria-label="Уменьшить"
+                      onClick={() => updateQuoteQuantity(item.sku, item.quantity - 1)}
+                    >
+                      −
+                    </button>
+                    <span>{item.quantity}</span>
+                    <button
+                      type="button"
+                      className="quote-qty-btn"
+                      aria-label="Увеличить"
+                      onClick={() => updateQuoteQuantity(item.sku, item.quantity + 1)}
+                    >
+                      +
+                    </button>
                   </div>
                 </div>
                 <button

@@ -2,7 +2,7 @@
 import Layout from "@/layouts/Layout.astro";
 import Breadcrumbs from "@/components/Breadcrumbs.astro";
 import LeadForm from "@/components/LeadForm";
-import { cities, categories, site } from "@/lib/data";
+import { cities, categories, site, getProductBySku, productImageUrl, formatPrice } from "@/lib/data";
 import { withBase } from "@/lib/paths";
 
 export function getStaticPaths() {
@@ -12,6 +12,10 @@ export function getStaticPaths() {
 const { slug } = Astro.params;
 const city = cities.find((c) => c.slug === slug);
 if (!city) return Astro.redirect(withBase("/"));
+
+const popularProducts = (city.popularSkus ?? [])
+  .map((sku) => getProductBySku(sku))
+  .filter(Boolean);
 
 const faq = [
   { q: `Как заказать металлопрокат в ${city.name}?`, a: "Выберите позиции в каталоге, добавьте в заявку или позвоните менеджеру — уточним наличие и подготовим расчёт." },
@@ -50,7 +54,33 @@ const faqSchema = {
 
   <section class="section section--tight">
     <div class="container">
-      <p class="section-lead" style="margin-bottom: 1.5rem;">{city.delivery}</p>
+      <p class="section-lead" style="margin-bottom: 1rem;">{city.delivery}</p>
+      {city.highlights && city.highlights.length > 0 && (
+        <ul class="city-highlights">
+          {city.highlights.map((item) => (
+            <li>{item}</li>
+          ))}
+        </ul>
+      )}
+      {popularProducts.length > 0 && (
+        <>
+          <p class="eyebrow" style="margin-top: 1.5rem;">Ходовые позиции</p>
+          <div class="product-grid" style="margin: 1rem 0 1.5rem;">
+            {popularProducts.map((product) => product && (
+              <a href={withBase(`/catalog/${product.categorySlug}/${product.slug}/`)} class="related-card">
+                <div class="related-card__media">
+                  <img src={productImageUrl(product.image)} alt={product.title} loading="lazy" width="200" height="150" />
+                </div>
+                <div class="related-card__body">
+                  <h3>{product.title}</h3>
+                  <p>{formatPrice(product.price)}</p>
+                </div>
+              </a>
+            ))}
+          </div>
+        </>
+      )}
+      <p class="eyebrow">Категории</p>
       <div class="category-grid">
         {categories.slice(0, 6).map((cat) => (
           <a href={withBase(`/catalog/${cat.slug}/`)} class="category-card">
