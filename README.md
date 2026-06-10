@@ -2,9 +2,14 @@
 
 Сайт на Astro: каталог металлопроката и стройматериалов, региональное SEO, список заявки и отправка лидов в Telegram.
 
-## Репозиторий
+## Репозиторий и сайт на GitHub
 
-Код для GitHub: [rinat3636/metalstroy](https://github.com/rinat3636/metalstroy)
+- Код: [rinat3636/metalstroy](https://github.com/rinat3636/metalstroy)
+- Сайт (GitHub Pages): **https://rinat3636.github.io/metalstroy/**
+
+При пуше в `main` деплой идёт автоматически (workflow `Deploy GitHub Pages`).
+
+> На GitHub Pages работает каталог и страницы. Формы заявок и Telegram нужен сервер (Railway/Render) — см. `Dockerfile` и `render.yaml`.
 
 Загрузка (заменяет `main` в metalstroy):
 
