@@ -1,0 +1,152 @@
+---
+import Layout from "@/layouts/Layout.astro";
+import { products, categories, site } from "@/lib/data";
+
+const topCategories = categories.slice(0, 6);
+---
+
+<Layout
+  title={`${site.name} — металлопрокат и стройматериалы в ДНР`}
+  description="Профсталь-инвест: каталог металлопроката и стройматериалов в ДНР. Трубы, арматура, лист, профнастил, сетки, кровля. Подбор, расчёт и поставка по региону."
+>
+  <section class="hero">
+    <div class="container hero__grid">
+      <div class="hero__copy">
+        <p class="eyebrow">{site.name}</p>
+        <h1>Металлопрокат и стройматериалы в ДНР</h1>
+        <p class="hero__lead">
+          Комплектуем частные стройки, подрядчиков и организации: профильная труба, арматура, лист,
+          профнастил, сетка, крепёж и кровельные материалы.
+        </p>
+        <div class="hero__tags">
+          <span>Складская программа</span>
+          <span>Партии под объект</span>
+          <span>Доставка по согласованию</span>
+        </div>
+        <div class="hero__actions">
+          <a class="btn btn--accent" href="/catalog/">Открыть каталог</a>
+          <a class="btn btn--outline" href="/contacts/#request">Запросить расчёт</a>
+        </div>
+        <dl class="hero__facts">
+          <div>
+            <dt>{products.length}</dt>
+            <dd>позиций в каталоге</dd>
+          </div>
+          <div>
+            <dt>опт / розница</dt>
+            <dd>под частные и строительные задачи</dd>
+          </div>
+          <div>
+            <dt>ДНР</dt>
+            <dd>самовывоз или доставка</dd>
+          </div>
+        </dl>
+      </div>
+      <aside class="hero-panel">
+        <div class="hero-panel__image">
+          <img src="/assets/placeholder-product.svg" alt="Металлопрокат на складе" loading="eager" />
+        </div>
+        <div class="hero-panel__body">
+          <p class="hero-panel__label">В наличии и под заказ</p>
+          <div class="supply-list">
+            {topCategories.map((cat) => (
+              <a href={`/catalog/${cat.slug}/`}>{cat.name}</a>
+            ))}
+          </div>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <section class="section section--tight">
+    <div class="container trust-grid">
+      <article class="trust-card">
+        <strong>Под объект</strong>
+        <span>Подберём позиции по размерам, объёму и назначению.</span>
+      </article>
+      <article class="trust-card">
+        <strong>По наличию</strong>
+        <span>Уточним остатки и предложим подходящую замену.</span>
+      </article>
+      <article class="trust-card">
+        <strong>Для организаций</strong>
+        <span>Счёт, закрывающие документы, работа с партиями.</span>
+      </article>
+      <article class="trust-card">
+        <strong>По региону</strong>
+        <span>Самовывоз или доставка по согласованному маршруту.</span>
+      </article>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container">
+      <p class="eyebrow">Как работаем</p>
+      <h2 class="section-title">От подбора позиции до отгрузки без лишних шагов</h2>
+      <div class="process">
+        <span><b>01</b> Выбор позиции</span>
+        <span><b>02</b> Проверка наличия</span>
+        <span><b>03</b> Расчёт партии</span>
+        <span><b>04</b> Отгрузка</span>
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container">
+      <p class="eyebrow">Каталог</p>
+      <h2 class="section-title">Популярные категории</h2>
+      <p class="section-lead">Цены и остатки требуют подтверждения менеджером. Подберём аналоги, если нужной позиции нет в наличии.</p>
+      <div class="category-grid" style="margin-top: 2rem;">
+        {categories.map((cat) => (
+          <a href={`/catalog/${cat.slug}/`} class="category-card">
+            <span class="category-card__count">{cat.count} позиций</span>
+            <h3>{cat.name}</h3>
+            <p>{cat.description}</p>
+          </a>
+        ))}
+      </div>
+      <div style="margin-top: 2rem;">
+        <a class="btn btn--accent" href="/catalog/">Смотреть весь каталог</a>
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container split-grid">
+      <div>
+        <p class="eyebrow">Сервис</p>
+        <h2 class="section-title">Подбор по размерам, резка по задаче, доставка по согласованию</h2>
+        <p class="section-lead">Каталог помогает быстро подобрать позиции. Итоговая стоимость зависит от объёма, длины, остатков, доставки и текущей закупки.</p>
+        <a class="btn btn--outline" href="/delivery/" style="margin-top: 1rem;">Подробнее о доставке</a>
+      </div>
+      <div class="service-list">
+        <article class="service-card">
+          <h3>Для частных клиентов</h3>
+          <p>Заборы, навесы, кровля, сетка, профильная труба, расходные позиции для участка и ремонта.</p>
+        </article>
+        <article class="service-card">
+          <h3>Для строителей</h3>
+          <p>Арматура, швеллер, уголок, лист, трубы, крепёж и расходные материалы с быстрым расчётом партии.</p>
+        </article>
+        <article class="service-card">
+          <h3>Для организаций</h3>
+          <p>Счёт, закрывающие документы и поставка под объект. Реквизиты предоставляются при оформлении заказа.</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section class="section request-section">
+    <div class="container request-grid">
+      <div>
+        <p class="eyebrow">Заявка</p>
+        <h2 class="section-title" style="color: #fff;">Отправьте список позиций на расчёт</h2>
+        <p class="section-lead">Оставьте контакты и список нужных позиций. Менеджер уточнит актуальную цену, наличие и срок доставки.</p>
+      </div>
+      <div>
+        <a class="btn btn--accent" href="/contacts/#request">Перейти к форме заявки</a>
+      </div>
+    </div>
+  </section>
+</Layout>

@@ -1,0 +1,71 @@
+---
+import Layout from "@/layouts/Layout.astro";
+import Breadcrumbs from "@/components/Breadcrumbs.astro";
+import LeadForm from "@/components/LeadForm";
+import { site } from "@/lib/data";
+---
+
+<Layout
+  title="Контакты и заявка"
+  description={`Контакты ${site.name}: телефон, email, адрес склада. Оставьте заявку на расчёт металлопроката.`}
+>
+  <div class="page-header">
+    <div class="container">
+      <Breadcrumbs items={[
+        { label: "Главная", href: "/" },
+        { label: "Контакты" },
+      ]} />
+      <p class="eyebrow">Контакты</p>
+      <h1 class="section-title">Свяжитесь с нами</h1>
+      <p class="section-lead">Позвоните, напишите или оставьте заявку — менеджер уточнит наличие, цену и сроки.</p>
+    </div>
+  </div>
+
+  <section class="section section--tight">
+    <div class="container contacts-grid">
+      <article class="contact-card">
+        <h3>Телефон</h3>
+        <p><a href={`tel:${site.phone.replace(/\s/g, "")}`} data-goal="phone_click">{site.phone}</a></p>
+      </article>
+      <article class="contact-card">
+        <h3>Email</h3>
+        <p><a href={`mailto:${site.email}`}>{site.email}</a></p>
+      </article>
+      <article class="contact-card">
+        <h3>Мессенджеры</h3>
+        <p>
+          <a href={site.telegram} target="_blank" rel="noopener">Telegram</a><br />
+          <a href={site.whatsapp} target="_blank" rel="noopener">WhatsApp</a>
+        </p>
+      </article>
+      <article class="contact-card">
+        <h3>Адрес склада</h3>
+        <p>{site.address}</p>
+      </article>
+      <article class="contact-card">
+        <h3>График работы</h3>
+        <p>{site.schedule}</p>
+      </article>
+      <article class="contact-card">
+        <h3>Реквизиты</h3>
+        <p>
+          {site.legalName}<br />
+          ИНН: {site.inn}<br />
+          КПП: {site.kpp}<br />
+          ОГРН: {site.ogrn}
+        </p>
+      </article>
+    </div>
+  </section>
+
+  <section class="section request-section">
+    <div class="container request-grid">
+      <div>
+        <p class="eyebrow">Заявка</p>
+        <h2 class="section-title" style="color: #fff;">Отправьте список позиций на расчёт</h2>
+        <p class="section-lead">Добавьте товары из каталога в список заявки или опишите нужные позиции вручную.</p>
+      </div>
+      <LeadForm client:load />
+    </div>
+  </section>
+</Layout>

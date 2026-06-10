@@ -1,0 +1,27 @@
+---
+import Layout from "@/layouts/Layout.astro";
+import CatalogBrowser from "@/components/CatalogBrowser";
+import Breadcrumbs from "@/components/Breadcrumbs.astro";
+---
+
+<Layout
+  title="Каталог металлопроката и стройматериалов"
+  description="Каталог Профсталь-инвест: трубы, арматура, лист, профнастил, сетки, кровля и крепёж. Фильтры по категории и наличию."
+>
+  <div class="page-header">
+    <div class="container">
+      <Breadcrumbs items={[
+        { label: "Главная", href: "/" },
+        { label: "Каталог" },
+      ]} />
+      <p class="eyebrow">Каталог</p>
+      <h1 class="section-title">Металлопрокат, кровля, сетки и стройматериалы</h1>
+      <p class="section-lead">Цены и остатки требуют подтверждения менеджером. Подберём аналоги, если нужной позиции нет в наличии.</p>
+    </div>
+  </div>
+  <section class="section section--tight">
+    <div class="container">
+      <CatalogBrowser client:load />
+    </div>
+  </section>
+</Layout>

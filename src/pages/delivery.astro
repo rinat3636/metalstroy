@@ -1,0 +1,54 @@
+---
+import Layout from "@/layouts/Layout.astro";
+import Breadcrumbs from "@/components/Breadcrumbs.astro";
+import { cities, site } from "@/lib/data";
+---
+
+<Layout
+  title="Доставка и сервис"
+  description="Подбор по размерам, резка, доставка металлопроката по ДНР. Профсталь-инвест — самовывоз и доставка по согласованию."
+>
+  <div class="page-header">
+    <div class="container">
+      <Breadcrumbs items={[
+        { label: "Главная", href: "/" },
+        { label: "Доставка" },
+      ]} />
+      <p class="eyebrow">Сервис</p>
+      <h1 class="section-title">Подбор, резка и доставка по согласованию</h1>
+      <p class="section-lead">Каталог помогает быстро подобрать позиции. Итоговая стоимость зависит от объёма, длины, остатков, доставки и текущей закупки.</p>
+    </div>
+  </div>
+
+  <section class="section section--tight">
+    <div class="container split-grid">
+      <div class="service-list">
+        <article class="service-card">
+          <h3>Самовывоз</h3>
+          <p>Заберите заказ со склада в удобное время. {site.schedule}. Адрес уточняйте у менеджера при оформлении заявки.</p>
+        </article>
+        <article class="service-card">
+          <h3>Доставка по ДНР</h3>
+          <p>Доставляем по согласованному маршруту. Стоимость и сроки зависят от объёма, габаритов и адреса объекта.</p>
+        </article>
+        <article class="service-card">
+          <h3>Подбор и замена</h3>
+          <p>Если нужной позиции нет в наличии — предложим аналог по размерам, марке стали и назначению.</p>
+        </article>
+      </div>
+      <div>
+        <p class="eyebrow">География</p>
+        <h2 class="section-title" style="font-size: 1.5rem;">Города поставки</h2>
+        <div class="city-grid" style="margin-top: 1rem;">
+          {cities.map((city) => (
+            <article class="city-card">
+              <h3>{city.name}</h3>
+              <p>{city.delivery}</p>
+              <a href={`/cities/${city.slug}/`}>{city.title}</a>
+            </article>
+          ))}
+        </div>
+      </div>
+    </div>
+  </section>
+</Layout>

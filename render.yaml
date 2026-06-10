@@ -1,0 +1,23 @@
+services:
+  - type: web
+    name: profstal-invest
+    runtime: docker
+    plan: free
+    healthCheckPath: /
+    envVars:
+      - key: NODE_VERSION
+        value: "22"
+      - key: TELEGRAM_BOT_TOKEN
+        sync: false
+      - key: TELEGRAM_WEBHOOK_SECRET
+        generateValue: true
+      - key: ADMIN_PASSWORD
+        sync: false
+      - key: PUBLIC_SITE_PHONE
+        value: "+79990000000"
+      - key: PUBLIC_SITE_EMAIL
+        value: sales@profstal-invest.ru
+    disk:
+      name: profstal-data
+      mountPath: /app/data
+      sizeGB: 1

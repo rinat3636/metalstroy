@@ -1,0 +1,33 @@
+---
+import Layout from "@/layouts/Layout.astro";
+import Breadcrumbs from "@/components/Breadcrumbs.astro";
+import { cities } from "@/lib/data";
+---
+
+<Layout
+  title="Города поставки металлопроката"
+  description="Поставка металлопроката и стройматериалов по городам ДНР: Донецк, Макеевка, Горловка и другие."
+>
+  <div class="page-header">
+    <div class="container">
+      <Breadcrumbs items={[
+        { label: "Главная", href: "/" },
+        { label: "Города" },
+      ]} />
+      <p class="eyebrow">География</p>
+      <h1 class="section-title">Поставка металлопроката по городам ДНР</h1>
+      <p class="section-lead">Подберём позиции под объект, уточним наличие и согласуем удобный вариант получения или доставки.</p>
+    </div>
+  </div>
+  <section class="section section--tight">
+    <div class="container city-grid">
+      {cities.map((city) => (
+        <article class="city-card">
+          <h3>{city.name}</h3>
+          <p>{city.text}</p>
+          <a href={`/cities/${city.slug}/`}>{city.title}</a>
+        </article>
+      ))}
+    </div>
+  </section>
+</Layout>

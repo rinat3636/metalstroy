@@ -1,0 +1,115 @@
+---
+export const prerender = false;
+
+import Layout from "@/layouts/Layout.astro";
+import Breadcrumbs from "@/components/Breadcrumbs.astro";
+import AddToQuoteButton from "@/components/AddToQuoteButton";
+import {
+  getCategoryBySlug,
+  getProductBySlugs,
+} from "@/lib/product-store";
+import {
+  formatPrice,
+  stockLabel,
+  productImageUrl,
+  site,
+} from "@/lib/data";
+
+const { categorySlug, productSlug } = Astro.params;
+const product = getProductBySlugs(categorySlug!, productSlug!);
+if (!product) return Astro.redirect("/catalog/");
+
+const category = getCategoryBySlug(categorySlug!);
+const stockClass =
+  product.stock === "in_stock" ? "badge badge--ok" :
+  product.stock === "on_order" ? "badge badge--warn" : "badge badge--no";
+
+const productSchema = {
+  "@context": "https://schema.org",
+  "@type": "Product",
+  name: product.title,
+  sku: product.sku,
+  description: product.description.slice(0, 300),
+  image: new URL(productImageUrl(product.image), Astro.site).href,
+  offers: {
+    "@type": "Offer",
+    price: product.price ?? undefined,
+    priceCurrency: "RUB",
+    availability:
+      product.stock === "in_stock"
+        ? "https://schema.org/InStock"
+        : product.stock === "on_order"
+          ? "https://schema.org/PreOrder"
+          : "https://schema.org/OutOfStock",
+    seller: { "@type": "Organization", name: site.name },
+  },
+};
+
+const breadcrumbSchema = {
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  itemListElement: [
+    { "@type": "ListItem", position: 1, name: "Главная", item: Astro.site },
+    { "@type": "ListItem", position: 2, name: "Каталог", item: new URL("/catalog/", Astro.site).href },
+    { "@type": "ListItem", position: 3, name: category?.name, item: new URL(`/catalog/${categorySlug}/`, Astro.site).href },
+    { "@type": "ListItem", position: 4, name: product.title },
+  ],
+};
+---
+
+<Layout
+  title={product.title}
+  description={product.description.slice(0, 160)}
+  schema={[productSchema, breadcrumbSchema]}
+>
+  <div class="page-header">
+    <div class="container">
+      <Breadcrumbs items={[
+        { label: "Главная", href: "/" },
+        { label: "Каталог", href: "/catalog/" },
+        { label: category?.name ?? "", href: `/catalog/${categorySlug}/` },
+        { label: product.title },
+      ]} />
+    </div>
+  </div>
+  <section class="section section--tight">
+    <div class="container product-detail">
+      <div class="product-detail__gallery">
+        <img src={productImageUrl(product.image)} alt={product.title} loading="eager" />
+      </div>
+      <div>
+        <div style="display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 0.75rem;">
+          <span class="badge" style="font-family: var(--font-mono);">{product.sku}</span>
+          <span class={stockClass}>{stockLabel(product.stock)}</span>
+        </div>
+        <p class="eyebrow">{product.category}{product.subcategory ? ` / ${product.subcategory}` : ""}</p>
+        <h1 class="section-title" style="font-size: 1.75rem;">{product.title}</h1>
+        <p class="product-detail__price">{formatPrice(product.price)}</p>
+        <p style="font-size: 0.8125rem; color: var(--color-ink-faint); margin-bottom: 1.5rem;">
+          Цена ориентировочная, уточняется менеджером при оформлении заявки.
+        </p>
+        <AddToQuoteButton client:load sku={product.sku} title={product.title} />
+        <a class="btn btn--outline" href={`tel:${site.phone.replace(/\s/g, "")}`} style="margin-left: 0.5rem;" data-goal="phone_click">
+          Позвонить
+        </a>
+
+        {product.specs.length > 0 && (
+          <table class="spec-table">
+            <tbody>
+              {product.specs.map((spec) => (
+                <tr>
+                  <th>{spec.label}</th>
+                  <td>{spec.value}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
+
+        <div class="seo-block">
+          <p>{product.description}</p>
+        </div>
+      </div>
+    </div>
+  </section>
+</Layout>

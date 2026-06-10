@@ -1,0 +1,28 @@
+---
+import { site } from "@/lib/data";
+---
+
+<footer class="site-footer" id="contacts">
+  <div class="container site-footer__grid">
+    <div>
+      <img src="/assets/logo.png" alt={site.name} width="180" height="44" class="footer-logo" />
+      <p>{site.name}. {site.tagline} для частного строительства, подрядчиков и организаций.</p>
+    </div>
+    <address>
+      <strong>Контакты</strong>
+      <a href={`tel:${site.phone.replace(/\s/g, "")}`} data-goal="phone_click">{site.phone}</a>
+      <a href={`mailto:${site.email}`}>{site.email}</a>
+      <span>{site.address}</span>
+      <span>{site.schedule}</span>
+    </address>
+    <div>
+      <strong>Реквизиты</strong>
+      <p>
+        {site.legalName}<br />
+        ИНН: {site.inn}<br />
+        КПП: {site.kpp}<br />
+        ОГРН: {site.ogrn}
+      </p>
+    </div>
+  </div>
+</footer>

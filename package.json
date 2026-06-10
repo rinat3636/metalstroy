@@ -1,0 +1,35 @@
+{
+  "name": "profstal-invest",
+  "type": "module",
+  "version": "1.0.0",
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "start": "node ./dist/server/entry.mjs",
+    "preview": "astro preview",
+    "migrate": "tsx scripts/migrate-catalog.ts",
+    "telegram:setup": "tsx scripts/telegram-setup.ts",
+    "telegram:check": "tsx scripts/telegram-check.ts",
+    "telegram:test": "tsx scripts/telegram-test.ts",
+    "telegram:poll": "tsx scripts/telegram-poll.ts",
+    "telegram:webhook:off": "tsx scripts/telegram-webhook-off.ts",
+    "telegram:webhook:set": "tsx scripts/telegram-webhook-set.ts",
+    "test": "tsx scripts/smoke-test.ts",
+    "astro": "astro"
+  },
+  "dependencies": {
+    "@astrojs/node": "^9.1.3",
+    "@astrojs/react": "^4.2.1",
+    "@astrojs/sitemap": "^3.3.0",
+    "astro": "^5.7.10",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0",
+    "undici": "^7.27.2"
+  },
+  "devDependencies": {
+    "@types/react": "^19.1.2",
+    "@types/react-dom": "^19.1.2",
+    "tsx": "^4.19.3",
+    "typescript": "^5.8.3"
+  }
+}

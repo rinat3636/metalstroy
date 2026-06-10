@@ -1,0 +1,40 @@
+---
+export const prerender = false;
+
+import Layout from "@/layouts/Layout.astro";
+import CatalogBrowser from "@/components/CatalogBrowser";
+import Breadcrumbs from "@/components/Breadcrumbs.astro";
+import { getCategoryBySlug, loadProducts } from "@/lib/product-store";
+
+const { categorySlug } = Astro.params;
+const category = getCategoryBySlug(categorySlug!);
+if (!category) return Astro.redirect("/catalog/");
+
+const categoryProducts = loadProducts().filter((p) => p.categorySlug === categorySlug);
+---
+
+<Layout
+  title={`${category.name} — купить в ДНР`}
+  description={category.description}
+>
+  <div class="page-header">
+    <div class="container">
+      <Breadcrumbs items={[
+        { label: "Главная", href: "/" },
+        { label: "Каталог", href: "/catalog/" },
+        { label: category.name },
+      ]} />
+      <p class="eyebrow">Категория</p>
+      <h1 class="section-title">{category.name}</h1>
+      <p class="section-lead">{category.description}</p>
+    </div>
+  </div>
+  <section class="section section--tight">
+    <div class="container">
+      <CatalogBrowser client:load products={categoryProducts} initialCategory={category.name} />
+      <div class="seo-block">
+        <p>{category.seoText}</p>
+      </div>
+    </div>
+  </section>
+</Layout>

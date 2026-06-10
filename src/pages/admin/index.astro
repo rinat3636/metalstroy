@@ -1,0 +1,16 @@
+---
+import Layout from "@/layouts/Layout.astro";
+import AdminPanel from "@/components/AdminPanel";
+---
+
+<Layout
+  title="Админка каталога"
+  description="Управление товарами Профсталь-инвест"
+  noindex={true}
+>
+  <section class="section section--tight">
+    <div class="container">
+      <AdminPanel client:load />
+    </div>
+  </section>
+</Layout>

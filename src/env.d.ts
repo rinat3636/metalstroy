@@ -1,0 +1,16 @@
+/// <reference types="astro/client" />
+
+interface ImportMetaEnv {
+  readonly PUBLIC_SITE_PHONE: string;
+  readonly PUBLIC_SITE_EMAIL: string;
+  readonly PUBLIC_YANDEX_METRIKA_ID: string;
+  readonly TELEGRAM_BOT_TOKEN: string;
+  readonly TELEGRAM_PROXY: string;
+  readonly TELEGRAM_WEBHOOK_SECRET: string;
+  readonly CRM_WEBHOOK_URL: string;
+  readonly ADMIN_PASSWORD: string;
+}
+
+interface ImportMeta {
+  readonly env: ImportMetaEnv;
+}

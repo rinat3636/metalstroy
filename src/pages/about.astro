@@ -1,0 +1,55 @@
+---
+import Layout from "@/layouts/Layout.astro";
+import Breadcrumbs from "@/components/Breadcrumbs.astro";
+import { products, categories, site } from "@/lib/data";
+---
+
+<Layout
+  title="О компании"
+  description={`${site.name} — поставка металлопроката и стройматериалов в ДНР для частных клиентов, подрядчиков и организаций.`}
+>
+  <div class="page-header">
+    <div class="container">
+      <Breadcrumbs items={[
+        { label: "Главная", href: "/" },
+        { label: "О компании" },
+      ]} />
+      <p class="eyebrow">Компания</p>
+      <h1 class="section-title">Профсталь-инвест — металлопрокат в ДНР</h1>
+      <p class="section-lead">
+        Поставляем металлопрокат и стройматериалы для частного строительства, подрядчиков и организаций.
+        В каталоге {products.length} позиций в {categories.length} категориях.
+      </p>
+    </div>
+  </div>
+
+  <section class="section section--tight">
+    <div class="container">
+      <div class="trust-grid">
+        <article class="trust-card">
+          <strong>Ассортимент</strong>
+          <span>Трубы, арматура, лист, профнастил, сетки, кровля, крепёж и стройматериалы.</span>
+        </article>
+        <article class="trust-card">
+          <strong>Работа с партиями</strong>
+          <span>Комплектуем объекты — от мелких заказов до крупных поставок.</span>
+        </article>
+        <article class="trust-card">
+          <strong>Документы</strong>
+          <span>Счёт и закрывающие документы для юридических лиц.</span>
+        </article>
+        <article class="trust-card">
+          <strong>Регион</strong>
+          <span>Поставка по городам ДНР — самовывоз и доставка.</span>
+        </article>
+      </div>
+
+      <div class="process" style="margin-top: 2.5rem;">
+        <span><b>01</b> Заявка или звонок</span>
+        <span><b>02</b> Подбор и проверка наличия</span>
+        <span><b>03</b> Расчёт и счёт</span>
+        <span><b>04</b> Отгрузка</span>
+      </div>
+    </div>
+  </section>
+</Layout>

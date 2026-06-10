@@ -1,0 +1,10 @@
+---
+import { site } from "@/lib/data";
+---
+
+<div class="mobile-bar">
+  <div class="container mobile-bar__inner">
+    <a class="btn btn--steel" href={`tel:${site.phone.replace(/\s/g, "")}`} data-goal="phone_click">Позвонить</a>
+    <a class="btn btn--accent" href="/contacts/#request">Заявка на расчёт</a>
+  </div>
+</div>

@@ -1,0 +1,74 @@
+---
+import "@/styles/global.css";
+import SiteHeader from "@/components/SiteHeader.astro";
+import SiteFooter from "@/components/SiteFooter.astro";
+import MobileBar from "@/components/MobileBar.astro";
+import QuoteApp from "@/components/QuoteApp";
+import Analytics from "@/components/Analytics.astro";
+import { site } from "@/lib/data";
+
+interface Props {
+  title: string;
+  description: string;
+  canonical?: string;
+  schema?: Record<string, unknown> | Record<string, unknown>[];
+  noindex?: boolean;
+}
+
+const { title, description, canonical, schema, noindex = false } = Astro.props;
+const fullTitle = title.includes(site.name) ? title : `${title} — ${site.name}`;
+const canonicalUrl = canonical ?? new URL(Astro.url.pathname, Astro.site).href;
+
+const orgSchema = {
+  "@context": "https://schema.org",
+  "@type": "LocalBusiness",
+  name: site.name,
+  legalName: site.legalName,
+  description: site.tagline,
+  telephone: site.phone,
+  email: site.email,
+  address: {
+    "@type": "PostalAddress",
+    addressRegion: "ДНР",
+    streetAddress: site.address,
+  },
+  openingHours: "Mo-Sa 08:00-18:00",
+  url: Astro.site,
+};
+---
+
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{fullTitle}</title>
+    <meta name="description" content={description} />
+    {noindex && <meta name="robots" content="noindex, nofollow" />}
+    <meta name="theme-color" content="#1a1f26" />
+    <link rel="canonical" href={canonicalUrl} />
+    <link rel="icon" href="/assets/logo.png" type="image/png" />
+    <script type="application/ld+json" set:html={JSON.stringify(orgSchema)} />
+    {schema && (
+      <script type="application/ld+json" set:html={JSON.stringify(
+        Array.isArray(schema) ? schema : schema
+      )} />
+    )}
+  </head>
+  <body>
+    <div class="top-strip">
+      <div class="container top-strip__inner">
+        <span>Поставка металлопроката и стройматериалов по ДНР</span>
+        <span>{site.schedule} · Самовывоз и доставка по согласованию</span>
+      </div>
+    </div>
+    <SiteHeader />
+    <main>
+      <slot />
+    </main>
+    <SiteFooter />
+    <MobileBar />
+    <QuoteApp client:load />
+    <Analytics />
+  </body>
+</html>

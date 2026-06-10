@@ -1,0 +1,90 @@
+---
+import Layout from "@/layouts/Layout.astro";
+import Breadcrumbs from "@/components/Breadcrumbs.astro";
+import LeadForm from "@/components/LeadForm";
+import { cities, categories, site } from "@/lib/data";
+
+export function getStaticPaths() {
+  return cities.map((city) => ({ params: { slug: city.slug } }));
+}
+
+const { slug } = Astro.params;
+const city = cities.find((c) => c.slug === slug);
+if (!city) return Astro.redirect("/");
+
+const faq = [
+  { q: `Как заказать металлопрокат в ${city.name}?`, a: "Выберите позиции в каталоге, добавьте в заявку или позвоните менеджеру — уточним наличие и подготовим расчёт." },
+  { q: `Есть ли доставка в ${city.name}?`, a: city.delivery },
+  { q: "Можно ли получить счёт для организации?", a: "Да, работаем с юридическими лицами: счёт, закрывающие документы, поставка партиями под объект." },
+];
+
+const faqSchema = {
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  mainEntity: faq.map((item) => ({
+    "@type": "Question",
+    name: item.q,
+    acceptedAnswer: { "@type": "Answer", text: item.a },
+  })),
+};
+---
+
+<Layout
+  title={`${city.title} — ${site.name}`}
+  description={`${city.text} Каталог металлопроката, подбор и поставка по региону.`}
+  schema={faqSchema}
+>
+  <div class="page-header">
+    <div class="container">
+      <Breadcrumbs items={[
+        { label: "Главная", href: "/" },
+        { label: "Города", href: "/cities/" },
+        { label: city.name },
+      ]} />
+      <p class="eyebrow">География</p>
+      <h1 class="section-title">{city.title}</h1>
+      <p class="section-lead">{city.text}</p>
+    </div>
+  </div>
+
+  <section class="section section--tight">
+    <div class="container">
+      <p class="section-lead" style="margin-bottom: 1.5rem;">{city.delivery}</p>
+      <div class="category-grid">
+        {categories.slice(0, 6).map((cat) => (
+          <a href={`/catalog/${cat.slug}/`} class="category-card">
+            <span class="category-card__count">{cat.count} позиций</span>
+            <h3>{cat.name}</h3>
+            <p>{cat.description}</p>
+          </a>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container">
+      <p class="eyebrow">FAQ</p>
+      <h2 class="section-title">Частые вопросы — {city.name}</h2>
+      <div class="faq-list" style="margin-top: 1.5rem;">
+        {faq.map((item) => (
+          <article class="faq-item">
+            <h3>{item.q}</h3>
+            <p>{item.a}</p>
+          </article>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <section class="section request-section">
+    <div class="container request-grid">
+      <div>
+        <p class="eyebrow">Заявка</p>
+        <h2 class="section-title" style="color: #fff;">Расчёт для {city.name}</h2>
+        <p class="section-lead">Оставьте контакты — менеджер перезвонит с актуальной ценой и сроками.</p>
+      </div>
+      <LeadForm client:load defaultCity={city.name} />
+    </div>
+  </section>
+</Layout>
