@@ -2,21 +2,39 @@
 
 Сайт на Astro: каталог металлопроката и стройматериалов, региональное SEO, список заявки и отправка лидов в Telegram.
 
-## Репозиторий и сайт на GitHub
+## Репозиторий
 
-- Код: [rinat3636/metalstroy](https://github.com/rinat3636/metalstroy)
-- Сайт (GitHub Pages): **https://rinat3636.github.io/metalstroy/**
+Код: [rinat3636/metalstroy](https://github.com/rinat3636/metalstroy)
 
-При пуше в `main` деплой идёт автоматически (workflow `Deploy GitHub Pages`).
-
-> На GitHub Pages работает каталог и страницы. Формы заявок и Telegram нужен сервер (Railway/Render) — см. `Dockerfile` и `render.yaml`.
-
-Загрузка (заменяет `main` в metalstroy):
+Загрузка в GitHub:
 
 ```powershell
-$env:GITHUB_TOKEN = "ваш_токен"   # Contents: Read and write
+$env:GITHUB_TOKEN = "ваш_токен"
 .\scripts\push-metalstroy.ps1
 ```
+
+## Деплой на Railway
+
+1. [railway.app](https://railway.app) → **New Project** → **Deploy from GitHub repo** → `metalstroy`
+2. **Variables** (Settings → Variables):
+
+```
+TELEGRAM_BOT_TOKEN=...
+ADMIN_PASSWORD=...
+PUBLIC_SITE_PHONE=+7...
+PUBLIC_SITE_EMAIL=sales@...
+```
+
+3. **Settings** → **Networking** → **Generate Domain** (например `profstal-invest.up.railway.app`)
+4. После деплоя — webhook бота (с ПК с VPN или с Railway shell):
+
+```powershell
+npm run telegram:webhook:set -- https://ваш-домен.railway.app
+```
+
+5. Админ пишет боту `/start` — заявки с сайта приходят в Telegram.
+
+> Том `/app/data` (админы Telegram, правки каталога): в Railway добавьте **Volume**, mount path `/app/data`.
 
 ## Запуск
 

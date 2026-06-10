@@ -1,0 +1,8 @@
+[build]
+builder = "dockerfile"
+dockerfilePath = "Dockerfile"
+
+[deploy]
+startCommand = "node ./dist/server/entry.mjs"
+healthcheckPath = "/"
+restartPolicyType = "on_failure"
