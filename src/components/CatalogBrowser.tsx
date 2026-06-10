@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { withBase } from "@/lib/paths";
 import type { Product } from "@/lib/types";
 
 interface Props {
@@ -24,8 +25,8 @@ function formatPrice(price: number | null): string {
 }
 
 function imageUrl(image?: string): string {
-  if (!image) return "/assets/placeholder-product.svg";
-  return `/assets/catalog-images/${encodeURIComponent(image)}`;
+  if (!image) return withBase("/assets/placeholder-product.svg");
+  return withBase(`/assets/catalog-images/${encodeURIComponent(image)}`);
 }
 
 export default function CatalogBrowser({ products: initialProducts = [], initialCategory = "all" }: Props) {
@@ -36,13 +37,14 @@ export default function CatalogBrowser({ products: initialProducts = [], initial
   const [visible, setVisible] = useState(16);
 
   useEffect(() => {
-    fetch("/api/products", { cache: "no-store" })
+    if (initialProducts.length > 0) return;
+    fetch(withBase("/api/products"), { cache: "no-store" })
       .then((r) => r.json())
       .then((data) => {
         if (Array.isArray(data.products)) setProducts(data.products);
       })
       .catch(() => {});
-  }, []);
+  }, [initialProducts.length]);
 
   useEffect(() => {
     setCategory(initialCategory);
@@ -151,7 +153,7 @@ export default function CatalogBrowser({ products: initialProducts = [], initial
       <div className="product-grid">
         {shown.map((product) => (
           <article className="product-card" key={product.sku}>
-            <a href={`/catalog/${product.categorySlug}/${product.slug}/`} className="product-card__media">
+            <a href={withBase(`/catalog/${product.categorySlug}/${product.slug}/`)} className="product-card__media">
               <img src={imageUrl(product.image)} alt={product.title} loading="lazy" />
             </a>
             <div className="product-card__body">
@@ -164,7 +166,7 @@ export default function CatalogBrowser({ products: initialProducts = [], initial
                 {product.subcategory ? ` / ${product.subcategory}` : ""}
               </p>
               <h3>
-                <a href={`/catalog/${product.categorySlug}/${product.slug}/`}>{product.title}</a>
+                <a href={withBase(`/catalog/${product.categorySlug}/${product.slug}/`)}>{product.title}</a>
               </h3>
               <p className="product-card__specs">{product.specsRaw || "Характеристики уточняются"}</p>
             </div>

@@ -1,6 +1,7 @@
 ---
 import Layout from "@/layouts/Layout.astro";
 import { products, categories, site } from "@/lib/data";
+import { withBase } from "@/lib/paths";
 
 const topCategories = categories.slice(0, 6);
 ---
@@ -24,8 +25,8 @@ const topCategories = categories.slice(0, 6);
           <span>Доставка по согласованию</span>
         </div>
         <div class="hero__actions">
-          <a class="btn btn--accent" href="/catalog/">Открыть каталог</a>
-          <a class="btn btn--outline" href="/contacts/#request">Запросить расчёт</a>
+          <a class="btn btn--accent" href={withBase("/catalog/")}>Открыть каталог</a>
+          <a class="btn btn--outline" href={withBase("/contacts/#request")}>Запросить расчёт</a>
         </div>
         <dl class="hero__facts">
           <div>
@@ -44,13 +45,13 @@ const topCategories = categories.slice(0, 6);
       </div>
       <aside class="hero-panel">
         <div class="hero-panel__image">
-          <img src="/assets/placeholder-product.svg" alt="Металлопрокат на складе" loading="eager" />
+          <img src={withBase("/assets/placeholder-product.svg")} alt="Металлопрокат на складе" loading="eager" />
         </div>
         <div class="hero-panel__body">
           <p class="hero-panel__label">В наличии и под заказ</p>
           <div class="supply-list">
             {topCategories.map((cat) => (
-              <a href={`/catalog/${cat.slug}/`}>{cat.name}</a>
+              <a href={withBase(`/catalog/${cat.slug}/`)}>{cat.name}</a>
             ))}
           </div>
         </div>
@@ -99,7 +100,7 @@ const topCategories = categories.slice(0, 6);
       <p class="section-lead">Цены и остатки требуют подтверждения менеджером. Подберём аналоги, если нужной позиции нет в наличии.</p>
       <div class="category-grid" style="margin-top: 2rem;">
         {categories.map((cat) => (
-          <a href={`/catalog/${cat.slug}/`} class="category-card">
+          <a href={withBase(`/catalog/${cat.slug}/`)} class="category-card">
             <span class="category-card__count">{cat.count} позиций</span>
             <h3>{cat.name}</h3>
             <p>{cat.description}</p>
@@ -107,7 +108,7 @@ const topCategories = categories.slice(0, 6);
         ))}
       </div>
       <div style="margin-top: 2rem;">
-        <a class="btn btn--accent" href="/catalog/">Смотреть весь каталог</a>
+        <a class="btn btn--accent" href={withBase("/catalog/")}>Смотреть весь каталог</a>
       </div>
     </div>
   </section>
@@ -118,7 +119,7 @@ const topCategories = categories.slice(0, 6);
         <p class="eyebrow">Сервис</p>
         <h2 class="section-title">Подбор по размерам, резка по задаче, доставка по согласованию</h2>
         <p class="section-lead">Каталог помогает быстро подобрать позиции. Итоговая стоимость зависит от объёма, длины, остатков, доставки и текущей закупки.</p>
-        <a class="btn btn--outline" href="/delivery/" style="margin-top: 1rem;">Подробнее о доставке</a>
+        <a class="btn btn--outline" href={withBase("/delivery/")} style="margin-top: 1rem;">Подробнее о доставке</a>
       </div>
       <div class="service-list">
         <article class="service-card">
@@ -145,7 +146,7 @@ const topCategories = categories.slice(0, 6);
         <p class="section-lead">Оставьте контакты и список нужных позиций. Менеджер уточнит актуальную цену, наличие и срок доставки.</p>
       </div>
       <div>
-        <a class="btn btn--accent" href="/contacts/#request">Перейти к форме заявки</a>
+        <a class="btn btn--accent" href={withBase("/contacts/#request")}>Перейти к форме заявки</a>
       </div>
     </div>
   </section>

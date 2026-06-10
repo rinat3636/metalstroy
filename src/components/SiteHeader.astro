@@ -1,18 +1,19 @@
 ---
 import { site } from "@/lib/data";
+import { withBase } from "@/lib/paths";
 ---
 
 <header class="site-header">
   <div class="container site-header__inner">
-    <a class="brand" href="/" aria-label={site.name}>
-      <img src="/assets/logo.png" alt={site.name} width="200" height="48" />
+    <a class="brand" href={withBase("/")} aria-label={site.name}>
+      <img src={withBase("/assets/logo.png")} alt={site.name} width="200" height="48" />
     </a>
     <nav class="main-nav" id="mainNav" aria-label="Основная навигация">
-      <a href="/catalog/">Каталог</a>
-      <a href="/cities/">Города</a>
-      <a href="/delivery/">Доставка</a>
-      <a href="/about/">О компании</a>
-      <a href="/contacts/">Контакты</a>
+      <a href={withBase("/catalog/")}>Каталог</a>
+      <a href={withBase("/cities/")}>Города</a>
+      <a href={withBase("/delivery/")}>Доставка</a>
+      <a href={withBase("/about/")}>О компании</a>
+      <a href={withBase("/contacts/")}>Контакты</a>
     </nav>
     <div class="header-actions">
       <a class="phone-link" href={`tel:${site.phone.replace(/\s/g, "")}`} data-goal="phone_click">{site.phone}</a>
@@ -20,7 +21,7 @@ import { site } from "@/lib/data";
         Заявка
         <span class="quote-badge__count" id="headerQuoteCount" hidden>0</span>
       </button>
-      <a class="btn btn--accent" href="/contacts/#request">Расчёт</a>
+      <a class="btn btn--accent" href={withBase("/contacts/#request")}>Расчёт</a>
     </div>
     <button class="menu-toggle" type="button" id="menuToggle" aria-label="Меню" aria-expanded="false" aria-controls="sideMenu">
       <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -37,15 +38,15 @@ import { site } from "@/lib/data";
     <button class="btn btn--ghost btn--sm" type="button" id="sideMenuClose" aria-label="Закрыть меню">Закрыть</button>
   </div>
   <nav class="side-menu__nav">
-    <a href="/catalog/">Каталог</a>
-    <a href="/cities/">Города</a>
-    <a href="/delivery/">Доставка</a>
-    <a href="/about/">О компании</a>
-    <a href="/contacts/">Контакты</a>
+    <a href={withBase("/catalog/")}>Каталог</a>
+    <a href={withBase("/cities/")}>Города</a>
+    <a href={withBase("/delivery/")}>Доставка</a>
+    <a href={withBase("/about/")}>О компании</a>
+    <a href={withBase("/contacts/")}>Контакты</a>
   </nav>
   <div class="side-menu__footer">
     <a class="btn btn--steel" href={`tel:${site.phone.replace(/\s/g, "")}`} data-goal="phone_click">{site.phone}</a>
-    <a class="btn btn--accent" href="/contacts/#request">Заявка на расчёт</a>
+    <a class="btn btn--accent" href={withBase("/contacts/#request")}>Заявка на расчёт</a>
   </div>
 </aside>
 

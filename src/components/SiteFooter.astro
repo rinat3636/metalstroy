@@ -1,11 +1,12 @@
 ---
 import { site } from "@/lib/data";
+import { withBase } from "@/lib/paths";
 ---
 
 <footer class="site-footer" id="contacts">
   <div class="container site-footer__grid">
     <div>
-      <img src="/assets/logo.png" alt={site.name} width="180" height="44" class="footer-logo" />
+      <img src={withBase("/assets/logo.png")} alt={site.name} width="180" height="44" class="footer-logo" />
       <p>{site.name}. {site.tagline} для частного строительства, подрядчиков и организаций.</p>
     </div>
     <address>

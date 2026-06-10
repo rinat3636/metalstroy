@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
+import { withBase } from "@/lib/paths";
 import type { QuoteItem } from "@/lib/types";
 import {
   addToQuote,
@@ -95,7 +96,7 @@ export default function QuoteApp() {
               Очистить список
             </button>
           )}
-          <a className="btn btn--accent" href="/contacts/#request" style={{ width: "100%" }}>
+          <a className="btn btn--accent" href={withBase("/contacts/#request")} style={{ width: "100%" }}>
             Отправить на расчёт
           </a>
         </div>

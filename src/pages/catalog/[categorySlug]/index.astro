@@ -1,14 +1,18 @@
 ---
-export const prerender = false;
-
 import Layout from "@/layouts/Layout.astro";
 import CatalogBrowser from "@/components/CatalogBrowser";
 import Breadcrumbs from "@/components/Breadcrumbs.astro";
+import { categories } from "@/lib/data";
 import { getCategoryBySlug, loadProducts } from "@/lib/product-store";
+import { withBase } from "@/lib/paths";
+
+export function getStaticPaths() {
+  return categories.map((category) => ({ params: { categorySlug: category.slug } }));
+}
 
 const { categorySlug } = Astro.params;
 const category = getCategoryBySlug(categorySlug!);
-if (!category) return Astro.redirect("/catalog/");
+if (!category) return Astro.redirect(withBase("/catalog/"));
 
 const categoryProducts = loadProducts().filter((p) => p.categorySlug === categorySlug);
 ---

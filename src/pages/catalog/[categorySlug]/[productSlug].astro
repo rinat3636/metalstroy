@@ -1,6 +1,4 @@
 ---
-export const prerender = false;
-
 import Layout from "@/layouts/Layout.astro";
 import Breadcrumbs from "@/components/Breadcrumbs.astro";
 import AddToQuoteButton from "@/components/AddToQuoteButton";
@@ -12,12 +10,20 @@ import {
   formatPrice,
   stockLabel,
   productImageUrl,
+  products,
   site,
 } from "@/lib/data";
+import { withBase } from "@/lib/paths";
+
+export function getStaticPaths() {
+  return products.map((product) => ({
+    params: { categorySlug: product.categorySlug, productSlug: product.slug },
+  }));
+}
 
 const { categorySlug, productSlug } = Astro.params;
 const product = getProductBySlugs(categorySlug!, productSlug!);
-if (!product) return Astro.redirect("/catalog/");
+if (!product) return Astro.redirect(withBase("/catalog/"));
 
 const category = getCategoryBySlug(categorySlug!);
 const stockClass =
@@ -50,8 +56,8 @@ const breadcrumbSchema = {
   "@type": "BreadcrumbList",
   itemListElement: [
     { "@type": "ListItem", position: 1, name: "Главная", item: Astro.site },
-    { "@type": "ListItem", position: 2, name: "Каталог", item: new URL("/catalog/", Astro.site).href },
-    { "@type": "ListItem", position: 3, name: category?.name, item: new URL(`/catalog/${categorySlug}/`, Astro.site).href },
+    { "@type": "ListItem", position: 2, name: "Каталог", item: new URL(withBase("/catalog/"), Astro.site).href },
+    { "@type": "ListItem", position: 3, name: category?.name, item: new URL(withBase(`/catalog/${categorySlug}/`), Astro.site).href },
     { "@type": "ListItem", position: 4, name: product.title },
   ],
 };

@@ -3,6 +3,7 @@ import Layout from "@/layouts/Layout.astro";
 import Breadcrumbs from "@/components/Breadcrumbs.astro";
 import LeadForm from "@/components/LeadForm";
 import { cities, categories, site } from "@/lib/data";
+import { withBase } from "@/lib/paths";
 
 export function getStaticPaths() {
   return cities.map((city) => ({ params: { slug: city.slug } }));
@@ -10,7 +11,7 @@ export function getStaticPaths() {
 
 const { slug } = Astro.params;
 const city = cities.find((c) => c.slug === slug);
-if (!city) return Astro.redirect("/");
+if (!city) return Astro.redirect(withBase("/"));
 
 const faq = [
   { q: `Как заказать металлопрокат в ${city.name}?`, a: "Выберите позиции в каталоге, добавьте в заявку или позвоните менеджеру — уточним наличие и подготовим расчёт." },
@@ -52,7 +53,7 @@ const faqSchema = {
       <p class="section-lead" style="margin-bottom: 1.5rem;">{city.delivery}</p>
       <div class="category-grid">
         {categories.slice(0, 6).map((cat) => (
-          <a href={`/catalog/${cat.slug}/`} class="category-card">
+          <a href={withBase(`/catalog/${cat.slug}/`)} class="category-card">
             <span class="category-card__count">{cat.count} позиций</span>
             <h3>{cat.name}</h3>
             <p>{cat.description}</p>

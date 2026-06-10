@@ -1,4 +1,6 @@
 ---
+import { withBase } from "@/lib/paths";
+
 interface Crumb {
   label: string;
   href?: string;
@@ -16,7 +18,7 @@ const { items } = Astro.props;
     <>
       {i > 0 && <span aria-hidden="true">/</span>}
       {item.href ? (
-        <a href={item.href}>{item.label}</a>
+        <a href={withBase(item.href)}>{item.label}</a>
       ) : (
         <span>{item.label}</span>
       )}

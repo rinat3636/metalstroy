@@ -6,6 +6,7 @@ import MobileBar from "@/components/MobileBar.astro";
 import QuoteApp from "@/components/QuoteApp";
 import Analytics from "@/components/Analytics.astro";
 import { site } from "@/lib/data";
+import { withBase } from "@/lib/paths";
 
 interface Props {
   title: string;
@@ -47,7 +48,7 @@ const orgSchema = {
     {noindex && <meta name="robots" content="noindex, nofollow" />}
     <meta name="theme-color" content="#1a1f26" />
     <link rel="canonical" href={canonicalUrl} />
-    <link rel="icon" href="/assets/logo.png" type="image/png" />
+    <link rel="icon" href={withBase("/assets/logo.png")} type="image/png" />
     <script type="application/ld+json" set:html={JSON.stringify(orgSchema)} />
     {schema && (
       <script type="application/ld+json" set:html={JSON.stringify(

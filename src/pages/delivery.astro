@@ -2,6 +2,7 @@
 import Layout from "@/layouts/Layout.astro";
 import Breadcrumbs from "@/components/Breadcrumbs.astro";
 import { cities, site } from "@/lib/data";
+import { withBase } from "@/lib/paths";
 ---
 
 <Layout
@@ -44,7 +45,7 @@ import { cities, site } from "@/lib/data";
             <article class="city-card">
               <h3>{city.name}</h3>
               <p>{city.delivery}</p>
-              <a href={`/cities/${city.slug}/`}>{city.title}</a>
+              <a href={withBase(`/cities/${city.slug}/`)}>{city.title}</a>
             </article>
           ))}
         </div>

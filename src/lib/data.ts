@@ -1,3 +1,4 @@
+import { withBase } from "./paths";
 import productsData from "@/data/products.json";
 import categoriesData from "@/data/categories.json";
 import citiesData from "@/data/cities.json";
@@ -51,6 +52,6 @@ export function stockLabel(stock: Product["stock"]): string {
 }
 
 export function productImageUrl(image?: string): string {
-  if (!image) return "/assets/placeholder-product.svg";
-  return `/assets/catalog-images/${encodeURIComponent(image)}`;
+  if (!image) return withBase("/assets/placeholder-product.svg");
+  return withBase(`/assets/catalog-images/${encodeURIComponent(image)}`);
 }
