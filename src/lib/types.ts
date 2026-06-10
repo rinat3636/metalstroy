@@ -26,6 +26,7 @@ export interface Category {
   name: string;
   slug: string;
   count: number;
+  image?: string;
   description: string;
   seoText: string;
 }

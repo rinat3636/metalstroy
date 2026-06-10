@@ -40,19 +40,21 @@ import { site } from "@/lib/data";
       </article>
       <article class="contact-card">
         <h3>Адрес склада</h3>
-        <p>{site.address}</p>
+        <p>
+          {site.address}<br />
+          <small>{site.addressNote}</small>
+        </p>
       </article>
       <article class="contact-card">
         <h3>График работы</h3>
         <p>{site.schedule}</p>
       </article>
       <article class="contact-card">
-        <h3>Реквизиты</h3>
+        <h3>Для юрлиц</h3>
         <p>
           {site.legalName}<br />
-          ИНН: {site.inn}<br />
-          КПП: {site.kpp}<br />
-          ОГРН: {site.ogrn}
+          Счёт и закрывающие документы — при оформлении заказа.<br />
+          Полные реквизиты вышлет менеджер.
         </p>
       </article>
     </div>

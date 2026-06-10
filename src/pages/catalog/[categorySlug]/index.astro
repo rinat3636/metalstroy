@@ -2,7 +2,7 @@
 import Layout from "@/layouts/Layout.astro";
 import CatalogBrowser from "@/components/CatalogBrowser";
 import Breadcrumbs from "@/components/Breadcrumbs.astro";
-import { categories } from "@/lib/data";
+import { categories, productImageUrl } from "@/lib/data";
 import { getCategoryBySlug, loadProducts } from "@/lib/product-store";
 import { withBase } from "@/lib/paths";
 
@@ -22,15 +22,22 @@ const categoryProducts = loadProducts().filter((p) => p.categorySlug === categor
   description={category.description}
 >
   <div class="page-header">
-    <div class="container">
-      <Breadcrumbs items={[
-        { label: "Главная", href: "/" },
-        { label: "Каталог", href: "/catalog/" },
-        { label: category.name },
-      ]} />
-      <p class="eyebrow">Категория</p>
-      <h1 class="section-title">{category.name}</h1>
-      <p class="section-lead">{category.description}</p>
+    <div class="container page-header__split">
+      <div>
+        <Breadcrumbs items={[
+          { label: "Главная", href: "/" },
+          { label: "Каталог", href: "/catalog/" },
+          { label: category.name },
+        ]} />
+        <p class="eyebrow">Категория</p>
+        <h1 class="section-title">{category.name}</h1>
+        <p class="section-lead">{category.description}</p>
+      </div>
+      {category.image && (
+        <div class="page-header__visual">
+          <img src={productImageUrl(category.image)} alt={category.name} width="480" height="300" loading="eager" />
+        </div>
+      )}
     </div>
   </div>
   <section class="section section--tight">

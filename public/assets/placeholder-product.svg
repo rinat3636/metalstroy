@@ -1,6 +1,14 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="400" height="300" viewBox="0 0 400 300" fill="none">
-  <rect width="400" height="300" fill="#ebe6df"/>
-  <rect x="120" y="90" width="160" height="120" rx="8" stroke="#bfb5a8" stroke-width="2" fill="#f4f1ec"/>
-  <path d="M140 180 L200 120 L260 180" stroke="#c45c2a" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
-  <circle cx="170" cy="110" r="12" stroke="#c45c2a" stroke-width="2" fill="none"/>
+<svg xmlns="http://www.w3.org/2000/svg" width="400" height="300" viewBox="0 0 400 300" fill="none" role="img" aria-label="Фото товара">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="400" y2="300" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#e8e4de"/>
+      <stop offset="1" stop-color="#d8d2c8"/>
+    </linearGradient>
+  </defs>
+  <rect width="400" height="300" fill="url(#bg)"/>
+  <rect x="48" y="88" width="304" height="124" rx="6" fill="#c8c2b8" opacity="0.35"/>
+  <path d="M72 188 L128 132 H176 L232 156 L328 108" stroke="#8a9aa8" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
+  <rect x="96" y="148" width="88" height="28" rx="4" fill="#6b7c8a" opacity="0.55"/>
+  <rect x="208" y="132" width="112" height="20" rx="4" fill="#6b7c8a" opacity="0.4"/>
+  <circle cx="300" cy="118" r="14" fill="#c45c2a" opacity="0.85"/>
 </svg>

@@ -173,14 +173,37 @@
 }
 
 .hero-panel__image {
+  position: relative;
   aspect-ratio: 16 / 9;
   overflow: hidden;
+  background: #1a1f26;
 }
 
 .hero-panel__image img {
   width: 100%;
   height: 100%;
   object-fit: cover;
+}
+
+.hero-panel__caption {
+  position: absolute;
+  inset: auto 0 0 0;
+  padding: 1rem 1.1rem;
+  background: linear-gradient(transparent, rgba(15, 20, 26, 0.82));
+  color: #fff;
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.hero-panel__caption-title {
+  font-weight: 700;
+  font-size: 0.9375rem;
+}
+
+.hero-panel__caption span:last-child {
+  font-size: 0.8125rem;
+  opacity: 0.9;
 }
 
 .hero-panel__body {
@@ -203,6 +226,9 @@
 }
 
 .supply-list a {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
   padding: 0.6rem 0.75rem;
   border-radius: var(--radius-sm);
   background: var(--color-bg);
@@ -212,6 +238,26 @@
 
 .supply-list a:hover {
   background: var(--color-accent-soft);
+}
+
+.supply-list__thumb {
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-sm);
+  object-fit: cover;
+  flex-shrink: 0;
+  border: 1px solid var(--color-border);
+}
+
+.supply-list a span {
+  flex: 1;
+}
+
+.supply-list a small {
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  color: var(--color-ink-faint);
+  white-space: nowrap;
 }
 
 .trust-grid {
@@ -272,15 +318,38 @@
   flex-direction: column;
   gap: 0.5rem;
   padding: 1.25rem;
+  overflow: hidden;
   background: var(--color-bg-elevated);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-md);
   transition: border-color var(--transition), box-shadow var(--transition);
 }
 
+.category-card:has(.category-card__media) {
+  padding-top: 0;
+}
+
 .category-card:hover {
   border-color: var(--color-accent);
   box-shadow: var(--shadow-sm);
+}
+
+.category-card__media {
+  margin: 0 -1.25rem;
+  aspect-ratio: 16 / 10;
+  overflow: hidden;
+  background: var(--color-bg);
+}
+
+.category-card__media img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.35s ease;
+}
+
+.category-card:hover .category-card__media img {
+  transform: scale(1.04);
 }
 
 .category-card__count {
@@ -856,6 +925,27 @@ body.menu-open {
 
 .page-header {
   padding-block: 2.5rem 1.5rem;
+}
+
+.page-header__split {
+  display: grid;
+  grid-template-columns: 1.2fr 0.8fr;
+  gap: 2rem;
+  align-items: center;
+}
+
+.page-header__visual {
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  border: 1px solid var(--color-border);
+  box-shadow: var(--shadow-md);
+  aspect-ratio: 16 / 10;
+}
+
+.page-header__visual img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
 .contacts-grid {
