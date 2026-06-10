@@ -2,6 +2,7 @@ import { withBase } from "./paths";
 import productsData from "@/data/products.json";
 import categoriesData from "@/data/categories.json";
 import citiesData from "@/data/cities.json";
+import featuredSkus from "@/data/featured-products.json";
 import type { Product, Category, City } from "./types";
 
 export const products = productsData as Product[];
@@ -24,6 +25,17 @@ export const site = {
 
 export function getProductBySlug(slug: string): Product | undefined {
   return products.find((p) => p.slug === slug);
+}
+
+export function getProductBySku(sku: string): Product | undefined {
+  return products.find((p) => p.sku === sku);
+}
+
+/** Ходовые позиции для главной */
+export function getFeaturedProducts(): Product[] {
+  return (featuredSkus as string[])
+    .map((sku) => getProductBySku(sku))
+    .filter((p): p is Product => !!p);
 }
 
 export function getProductsByCategory(categorySlug: string): Product[] {

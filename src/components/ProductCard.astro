@@ -1,0 +1,54 @@
+---
+import type { Product } from "@/lib/types";
+import { formatPrice, stockLabel, productImageUrl } from "@/lib/data";
+import { withBase } from "@/lib/paths";
+
+interface Props {
+  product: Product;
+}
+
+const { product } = Astro.props;
+
+const stockClass =
+  product.stock === "in_stock"
+    ? "badge badge--ok"
+    : product.stock === "on_order"
+      ? "badge badge--warn"
+      : "badge badge--no";
+
+const productUrl = withBase(`/catalog/${product.categorySlug}/${product.slug}/`);
+---
+
+<article class="product-card">
+  <a href={productUrl} class="product-card__media">
+    <img src={productImageUrl(product.image)} alt={product.title} loading="lazy" width="320" height="200" />
+  </a>
+  <div class="product-card__body">
+    <div class="product-card__meta">
+      <span class="badge product-card__sku">{product.sku}</span>
+      <span class={stockClass}>{stockLabel(product.stock)}</span>
+    </div>
+    <p class="product-card__category">
+      {product.category}
+      {product.subcategory ? ` / ${product.subcategory}` : ""}
+    </p>
+    <h3>
+      <a href={productUrl}>{product.title}</a>
+    </h3>
+    <p class="product-card__specs">{product.specsRaw || "Характеристики уточняются"}</p>
+  </div>
+  <div class="product-card__footer">
+    <div>
+      <div class="product-card__price">{formatPrice(product.price)}</div>
+      <small>уточняется менеджером</small>
+    </div>
+    <button
+      type="button"
+      class="btn btn--steel btn--sm js-add-quote"
+      data-sku={product.sku}
+      data-title={product.title}
+    >
+      В заявку
+    </button>
+  </div>
+</article>

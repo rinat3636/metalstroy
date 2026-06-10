@@ -1,7 +1,10 @@
 ---
 import Layout from "@/layouts/Layout.astro";
-import { products, categories, site, productImageUrl, getCategoryCoverImage } from "@/lib/data";
+import ProductCard from "@/components/ProductCard.astro";
+import { products, categories, site, productImageUrl, getCategoryCoverImage, getFeaturedProducts } from "@/lib/data";
 import { withBase } from "@/lib/paths";
+
+const featuredProducts = getFeaturedProducts();
 
 const topCategories = categories.slice(0, 6);
 ---
@@ -122,31 +125,34 @@ const topCategories = categories.slice(0, 6);
 
   <section class="section">
     <div class="container">
-      <p class="eyebrow">Каталог</p>
-      <h2 class="section-title">Популярные категории</h2>
+      <p class="eyebrow">Хиты продаж</p>
+      <h2 class="section-title">Ходовые позиции</h2>
       <p class="section-lead">Цены и остатки требуют подтверждения менеджером. Подберём аналоги, если нужной позиции нет в наличии.</p>
-      <div class="category-grid" style="margin-top: 2rem;">
-        {categories.map((cat) => {
-          const cover = getCategoryCoverImage(cat.slug);
-          return (
-            <a href={withBase(`/catalog/${cat.slug}/`)} class="category-card">
-              {cover && (
-                <div class="category-card__media">
-                  <img src={productImageUrl(cover)} alt={cat.name} loading="lazy" width="320" height="180" />
-                </div>
-              )}
-              <span class="category-card__count">{cat.count} позиций</span>
-              <h3>{cat.name}</h3>
-              <p>{cat.description}</p>
-            </a>
-          );
-        })}
+      <div class="product-grid" style="margin-top: 2rem;">
+        {featuredProducts.map((product) => (
+          <ProductCard product={product} />
+        ))}
       </div>
-      <div style="margin-top: 2rem;">
-        <a class="btn btn--accent" href={withBase("/catalog/")}>Смотреть весь каталог</a>
+      <div style="margin-top: 2rem; display: flex; flex-wrap: wrap; gap: 0.75rem;">
+        <a class="btn btn--accent" href={withBase("/catalog/")}>Весь каталог</a>
+        <a class="btn btn--outline" href={withBase("/contacts/#request")}>Запросить расчёт</a>
       </div>
     </div>
   </section>
+
+  <script>
+    document.querySelectorAll(".js-add-quote").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const sku = btn.getAttribute("data-sku");
+        const title = btn.getAttribute("data-title");
+        if (!sku || !title) return;
+        (window as unknown as { addToQuote?: (item: { sku: string; title: string }) => void }).addToQuote?.({
+          sku,
+          title,
+        });
+      });
+    });
+  </script>
 
   <section class="section">
     <div class="container split-grid">
