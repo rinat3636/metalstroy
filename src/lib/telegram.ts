@@ -1,5 +1,7 @@
+import { readPublicEnv } from "./runtime-env";
 import { getTelegramBotToken, telegramApi } from "./telegram-api";
 import { getTelegramAdminChatIds } from "./telegram-admins";
+import { getSiteOrigin } from "./subdomains";
 
 function escapeHtml(text: string): string {
   return text
@@ -18,6 +20,19 @@ export function getLeadRecipientChatIds(): number[] {
 
 export function isTelegramConfiguredForLeads(): boolean {
   return !!getTelegramToken() && getLeadRecipientChatIds().length > 0;
+}
+
+/** Публичная ссылка на бота для сообщений об ошибках. */
+export function getBotPublicLink(): string {
+  const fromEnv = readPublicEnv("PUBLIC_SITE_TELEGRAM");
+  if (fromEnv) return fromEnv;
+  return "https://t.me/proffinvest23_bot";
+}
+
+export function getBotPublicLabel(): string {
+  const link = getBotPublicLink();
+  const match = link.match(/t\.me\/([^/?]+)/i);
+  return match ? `@${match[1]}` : link;
 }
 
 export type TelegramSendOptions = {
@@ -74,8 +89,27 @@ export async function answerTelegramCallback(callbackQueryId: string, text?: str
   });
 }
 
+function formatPhoneTel(phone: string): string | null {
+  const digits = phone.replace(/\D/g, "");
+  if (digits.length < 10) return null;
+  const normalized = digits.startsWith("7") ? digits : `7${digits}`;
+  return `tel:+${normalized}`;
+}
+
+export function buildLeadReplyMarkup(phone: string): Record<string, unknown> {
+  const rows: Array<Array<{ text: string; url: string }>> = [];
+  const tel = formatPhoneTel(phone);
+  if (tel) rows.push([{ text: "📞 Позвонить", url: tel }]);
+  const site = getSiteOrigin();
+  if (site) rows.push([{ text: "🌐 Открыть сайт", url: site }]);
+  return { inline_keyboard: rows };
+}
+
 /** Заявки с сайта — всем, кто нажал /start в боте */
-export async function sendTelegramMessage(text: string): Promise<void> {
+export async function sendTelegramMessage(
+  text: string,
+  options?: TelegramSendOptions,
+): Promise<void> {
   if (!getTelegramToken()) throw new Error("TELEGRAM_BOT_TOKEN не задан");
 
   const admins = getLeadRecipientChatIds();
@@ -86,7 +120,7 @@ export async function sendTelegramMessage(text: string): Promise<void> {
   const errors: string[] = [];
   for (const chatId of admins) {
     try {
-      await sendTelegramToChat(chatId, text, { html: true });
+      await sendTelegramToChat(chatId, text, { ...options, html: true });
     } catch (e) {
       errors.push(e instanceof Error ? e.message : String(e));
     }
@@ -94,6 +128,11 @@ export async function sendTelegramMessage(text: string): Promise<void> {
   if (errors.length === admins.length) {
     throw new Error(errors[0] ?? "Не удалось отправить в Telegram");
   }
+}
+
+export async function sendLeadTelegramMessage(payload: Parameters<typeof formatLeadTelegramMessage>[0]): Promise<void> {
+  const text = formatLeadTelegramMessage(payload);
+  await sendTelegramMessage(text, { replyMarkup: buildLeadReplyMarkup(payload.phone) });
 }
 
 export const BOT_ADMIN_CONNECTED_TEXT = [
@@ -114,11 +153,13 @@ export const BOT_HELP_TEXT = [
   "",
   "Заявки с сайта приходят автоматически.",
   "",
-  "📋 Каталог — товары: цена, название, наличие",
+  "📋 Каталог — товары: цена, название, описание, фото, наличие",
   "➕ Новый товар — добавление",
   "📁 Категории — новая категория, название, описание, SEO",
   "🏢 Контакты — телефон, email, адрес, ИНН/КПП/ОГРН",
   "🔍 Найти — поиск по артикулу или названию",
+  "",
+  "/admins — сколько подключено к заявкам",
 ].join("\n");
 
 export function formatLeadTelegramMessage(payload: {
@@ -143,11 +184,16 @@ export function formatLeadTelegramMessage(payload: {
         .join("\n")
     : "";
 
+  const tel = formatPhoneTel(payload.phone);
+  const phoneHtml = tel
+    ? `<a href="${tel}">${escapeHtml(payload.phone)}</a>`
+    : escapeHtml(payload.phone);
+
   return [
     "<b>🆕 Новая заявка</b>",
     "",
     `<b>Имя:</b> ${escapeHtml(payload.name || "—")}`,
-    `<b>Телефон:</b> ${escapeHtml(payload.phone)}`,
+    `<b>Телефон:</b> ${phoneHtml}`,
     `<b>Город:</b> ${escapeHtml(payload.city || "—")}`,
     `<b>Страница:</b> ${escapeHtml(payload.source || "—")}`,
     "",

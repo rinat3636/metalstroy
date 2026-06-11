@@ -11,6 +11,8 @@
     "telegram:setup": "tsx scripts/telegram-setup.ts",
     "telegram:check": "tsx scripts/telegram-check.ts",
     "telegram:audit": "tsx scripts/telegram-audit.ts",
+    "seo:audit": "tsx scripts/seo-audit.ts",
+    "seo:seed-overrides": "tsx scripts/seed-seo-overrides.ts",
     "telegram:test": "tsx scripts/telegram-test.ts",
     "telegram:poll": "tsx scripts/telegram-poll.ts",
     "telegram:webhook:off": "tsx scripts/telegram-webhook-off.ts",

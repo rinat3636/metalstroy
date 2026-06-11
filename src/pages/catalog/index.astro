@@ -2,15 +2,38 @@
 import Layout from "@/layouts/Layout.astro";
 import CatalogBrowser from "@/components/CatalogBrowser";
 import Breadcrumbs from "@/components/Breadcrumbs.astro";
-import { loadCategories } from "@/lib/catalog-live";
+import { loadCategories, loadProducts } from "@/lib/catalog-live";
+import { absoluteUrl, buildBreadcrumbSchema } from "@/lib/seo";
 import { subdomainUrl } from "@/lib/subdomains";
 
 const categories = loadCategories();
+const products = loadProducts();
+const canonical = absoluteUrl("/catalog/");
+
+const breadcrumbSchema = buildBreadcrumbSchema([
+  { name: "Главная", href: absoluteUrl("/") },
+  { name: "Каталог" },
+]);
+
+const itemListSchema = {
+  "@context": "https://schema.org",
+  "@type": "ItemList",
+  name: "Каталог металлопроката",
+  numberOfItems: products.length,
+  itemListElement: categories.slice(0, 12).map((cat, i) => ({
+    "@type": "ListItem",
+    position: i + 1,
+    name: cat.name,
+    url: subdomainUrl(cat.slug),
+  })),
+};
 ---
 
 <Layout
-  title="Каталог металлопроката и стройматериалов"
-  description="Каталог Профсталь-инвест: трубы, арматура, лист, профнастил, сетки, кровля и крепёж. Фильтры по категории и наличию."
+  title="Каталог металлопроката и стройматериалов в ДНР"
+  description={`Каталог ${products.length} позиций в ${categories.length} категориях: трубы, арматура, лист, профнастил, сетки, кровля. Поставка по ДНР, расчёт онлайн.`}
+  canonical={canonical}
+  schema={[breadcrumbSchema, itemListSchema]}
 >
   <div class="page-header">
     <div class="container">
@@ -20,7 +43,7 @@ const categories = loadCategories();
       ]} />
       <p class="eyebrow">Каталог</p>
       <h1 class="section-title">Металлопрокат, кровля, сетки и стройматериалы</h1>
-      <p class="section-lead">Цены и остатки требуют подтверждения менеджером. Подберём аналоги, если нужной позиции нет в наличии.</p>
+      <p class="section-lead">{products.length} позиций в {categories.length} категориях. Цены и остатки уточняет менеджер.</p>
     </div>
   </div>
   <section class="section section--tight">
@@ -28,10 +51,18 @@ const categories = loadCategories();
       <div class="city-grid city-grid--compact">
         {categories.map((cat) => (
           <a class="city-card city-card--link" href={subdomainUrl(cat.slug)}>
-            <h3>{cat.name}</h3>
-            <p>{cat.count} позиций · {subdomainUrl(cat.slug).replace("https://", "")}</p>
+            <h2 style="font-size: 1.125rem; margin: 0;">{cat.name}</h2>
+            <p>{cat.count} позиций</p>
           </a>
         ))}
+      </div>
+      <div class="seo-block" style="margin-top: 2rem;">
+        <h2 class="section-title" style="font-size: 1.25rem;">Металлопрокат оптом и в розницу по ДНР</h2>
+        <p>
+          Профсталь-инвест — складская программа металлопроката и стройматериалов для частных заказчиков,
+          подрядчиков и организаций. Подбор по размерам, расчёт партии, доставка по Донецку, Макеевке,
+          Горловке и другим городам региона.
+        </p>
       </div>
       <CatalogBrowser client:visible />
     </div>

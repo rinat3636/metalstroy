@@ -29,5 +29,7 @@ export function getTelegramDataPaths(): Record<string, DataPathStatus> {
     catalogRaw: checkPath("data/catalog.json"),
     products: checkPath("src/data/products.json"),
     categories: checkPath("src/data/categories.json"),
+    sessions: checkPath("data/telegram-sessions.json"),
+    auditLog: checkPath("data/telegram-audit-log.json"),
   };
 }

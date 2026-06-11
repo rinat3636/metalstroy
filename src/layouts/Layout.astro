@@ -33,6 +33,7 @@ const {
 const site = loadSite();
 const yandex = getYandexConfig();
 const siteOrigin = getSiteOrigin();
+const indexFollow = !noindex;
 const fullTitle = title.includes(site.name) ? title : `${title} — ${site.name}`;
 const canonicalUrl = canonical ?? Astro.url.href.split("?")[0];
 const ogImageUrl = ogImage
@@ -94,12 +95,15 @@ const jsonLd = [orgSchema, websiteSchema, ...(schema ? (Array.isArray(schema) ? 
     <title>{fullTitle}</title>
     <meta name="description" content={description} />
     {yandex.verification && <meta name="yandex-verification" content={yandex.verification} />}
+    {yandex.googleVerification && <meta name="google-site-verification" content={yandex.googleVerification} />}
     <meta name="geo.region" content="RU-DON" />
     <meta name="geo.placename" content="Донецк" />
+    {indexFollow && <meta name="robots" content="index, follow, max-image-preview:large" />}
     {noindex && <meta name="robots" content="noindex, nofollow" />}
     <meta name="theme-color" content="#1a1f26" />
     <link rel="canonical" href={canonicalUrl} />
     <link rel="icon" href={withBase("/assets/logo.png")} type="image/png" />
+    {yandex.metrikaId && <link rel="preconnect" href="https://mc.yandex.ru" />}
     <meta property="og:type" content={ogType} />
     <meta property="og:locale" content="ru_RU" />
     <meta property="og:site_name" content={site.name} />
@@ -114,9 +118,22 @@ const jsonLd = [orgSchema, websiteSchema, ...(schema ? (Array.isArray(schema) ? 
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      rel="stylesheet"
-      href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Onest:wght@400;500;600;700;800&display=swap"
+      rel="preload"
+      as="style"
+      href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400&family=Onest:wght@400;600;700;800&display=swap"
     />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400&family=Onest:wght@400;600;700;800&display=swap"
+      media="print"
+      onload="this.media='all'"
+    />
+    <noscript>
+      <link
+        rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400&family=Onest:wght@400;600;700;800&display=swap"
+      />
+    </noscript>
     <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
   </head>
   <body>

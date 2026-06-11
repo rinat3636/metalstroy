@@ -4,7 +4,7 @@ import LeadForm from "@/components/LeadForm";
 import ProductCard from "@/components/ProductCard.astro";
 import { site, productImageUrl, cities } from "@/lib/data";
 import { getCategoryCoverImage, getFeaturedProducts, loadCategories, loadProducts } from "@/lib/catalog-live";
-import { absoluteUrl } from "@/lib/seo";
+import { absoluteUrl, buildFaqSchema } from "@/lib/seo";
 import { subdomainUrl } from "@/lib/subdomains";
 import { withBase } from "@/lib/paths";
 
@@ -14,12 +14,20 @@ const categories = loadCategories();
 
 const topCategories = categories.slice(0, 6);
 const homeCanonical = absoluteUrl("/");
+
+const homeFaq = [
+  { q: "Как оформить заказ металлопроката?", a: "Выберите позиции в каталоге, добавьте в заявку или позвоните — менеджер уточнит цену, наличие и сроки доставки по ДНР." },
+  { q: "Куда доставляете?", a: "Донецк, Макеевка, Горловка, Енакиево, Харцызск, Шахтёрск, Торез, Снежное, Ясиноватая, Мариуполь и другие населённые пункты ДНР." },
+  { q: "Работаете с юридическими лицами?", a: "Да — выставляем счёт, предоставляем закрывающие документы, поставляем партиями под объект." },
+];
+const faqSchema = buildFaqSchema(homeFaq);
 ---
 
 <Layout
   title={`${site.name} — металлопрокат и стройматериалы в ДНР`}
   description="Профсталь-инвест: каталог металлопроката и стройматериалов в ДНР. Трубы, арматура, лист, профнастил, сетки, кровля. Подбор, расчёт и поставка по региону."
   canonical={homeCanonical}
+  schema={faqSchema}
 >
   <section class="hero">
     <div class="container hero__grid">
@@ -235,6 +243,21 @@ const homeCanonical = absoluteUrl("/");
         <p class="section-lead">Оставьте контакты и список нужных позиций. Менеджер уточнит актуальную цену, наличие и срок доставки.</p>
       </div>
       <LeadForm client:load />
+    </div>
+  </section>
+
+  <section class="section section--tight">
+    <div class="container">
+      <p class="eyebrow">FAQ</p>
+      <h2 class="section-title" style="font-size: 1.375rem;">Частые вопросы</h2>
+      <div class="faq-list" style="margin-top: 1.5rem;">
+        {homeFaq.map((item) => (
+          <article class="faq-item">
+            <h3>{item.q}</h3>
+            <p>{item.a}</p>
+          </article>
+        ))}
+      </div>
     </div>
   </section>
 </Layout>

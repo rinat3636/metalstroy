@@ -3,6 +3,7 @@ import { getTelegramAdminChatIds } from "@/lib/telegram-admins";
 import { getTelegramBotToken, telegramApi } from "@/lib/telegram-api";
 import { getTelegramDataPaths } from "@/lib/telegram-data-paths";
 import { loadCategories, loadProducts } from "@/lib/product-store";
+import { getPollHealth } from "@/lib/telegram-poll-runner";
 import { getTelegramBotStatus } from "@/lib/telegram-server";
 
 export const prerender = false;
@@ -38,11 +39,13 @@ export const GET: APIRoute = async () => {
 
   const pollBlockedByWebhook = !!webhookUrl && status.mode === "poll";
   const dataWritable = Object.values(dataPaths).every((p) => p.writable);
+  const pollHealth = getPollHealth();
 
   return new Response(
     JSON.stringify(
       {
         ...status,
+        ...pollHealth,
         admins: getTelegramAdminChatIds().length,
         botUsername: botUsername ? `@${botUsername}` : null,
         webhookUrl,

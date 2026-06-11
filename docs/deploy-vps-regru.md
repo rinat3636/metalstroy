@@ -66,9 +66,11 @@ docker compose logs -f app
 ```
 
 Volumes сохраняют:
-- `/app/data` — админы бота, контакты, catalog.json
+- `/app/data` — админы бота, сессии, контакты, audit-log, catalog.json
 - `/app/src/data` — products.json, categories.json
 - `/app/public/assets/catalog-images` — фото товаров
+
+Telegram-бот: **`TELEGRAM_MODE=poll`** в `.env` (режим по умолчанию, webhook не нужен).
 
 ## 6. Nginx + SSL
 
@@ -106,12 +108,25 @@ curl https://ps-invest.ru/api/telegram/status
 curl https://ps-invest.ru/sitemap-index.xml
 ```
 
+В ответе `/api/telegram/status` ожидается:
+- `"hint": "ok"`
+- `"pollRunning": true`
+- `"pollBlockedByWebhook": false`
+- `"dataWritable": true`
+
 Логи бота:
 
 ```bash
 docker compose logs app | grep telegram
-# Ожидается: [telegram] Long polling — @proffinvest23_bot
+# [telegram] Старт (mode=poll, token=ok)
+# [telegram] API OK — @proffinvest23_bot
+# [telegram] Long polling — @proffinvest23_bot
 ```
+
+Проверка в Telegram:
+1. `/start` — клавиатура админки
+2. `/admins` — число подключённых
+3. Заявка с `/contacts/` — кнопки «Позвонить» и «Открыть сайт»
 
 ## 8. Обновление сайта
 

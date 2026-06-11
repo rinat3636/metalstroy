@@ -1,10 +1,8 @@
 import type { Product } from "./types";
+import { readPublicEnv } from "./runtime-env";
 
 function primaryDomain(): string {
-  if (typeof process !== "undefined" && process.env.PUBLIC_SITE_DOMAIN?.trim()) {
-    return process.env.PUBLIC_SITE_DOMAIN.trim();
-  }
-  return import.meta.env.PUBLIC_SITE_DOMAIN?.trim() || "ps-invest.ru";
+  return readPublicEnv("PUBLIC_SITE_DOMAIN") || "ps-invest.ru";
 }
 
 /** Канонический URL товара (без server-only зависимостей — безопасно для client bundle). */

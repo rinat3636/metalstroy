@@ -7,7 +7,7 @@ import {
   sendTelegramToChat,
   type TelegramSendOptions,
 } from "./telegram";
-import { addTelegramAdmin } from "./telegram-admins";
+import { addTelegramAdmin, loadTelegramAdmins } from "./telegram-admins";
 import {
   buildSearchReply,
   handleCallback,
@@ -123,6 +123,15 @@ export async function handleTelegramMessage(message: TelegramUpdateMessage): Pro
 
   if (text === BTN_HELP || text === "/help") {
     await reply(chat.id, BOT_HELP_TEXT);
+    return;
+  }
+
+  if (text === "/admins") {
+    const count = loadTelegramAdmins().length;
+    await reply(chat.id, {
+      text: `Подключено админов: <b>${count}</b>\nЗаявки с сайта приходят всем, кто нажал /start.`,
+      options: { html: true },
+    });
     return;
   }
 

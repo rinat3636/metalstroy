@@ -2,18 +2,18 @@
 import Layout from "@/layouts/Layout.astro";
 import Breadcrumbs from "@/components/Breadcrumbs.astro";
 import LeadForm from "@/components/LeadForm";
-import { cities, site, productImageUrl, formatPrice } from "@/lib/data";
+import { cities, site, productImageUrl, formatPrice, loadSite } from "@/lib/data";
 import { getProductBySku, loadCategories } from "@/lib/catalog-live";
 import { buildBreadcrumbSchema, buildFaqSchema, canonicalForPage, absoluteUrl } from "@/lib/seo";
+import { cityFaq, cityMetaDescription, cityMetaTitle } from "@/lib/city-seo";
 import { cityProductUrl } from "@/lib/city-product-seo";
 import { subdomainUrl } from "@/lib/subdomains";
 import { withBase } from "@/lib/paths";
 
-export function getStaticPaths() {
-  return cities.map((city) => ({ params: { slug: city.slug } }));
-}
+export const prerender = false;
 
 const { slug } = Astro.params;
+const siteLive = loadSite();
 const city = cities.find((c) => c.slug === slug);
 if (!city) return Astro.redirect(withBase("/"));
 
@@ -29,11 +29,7 @@ const popularProducts = (city.popularSkus ?? [])
   .map((sku) => getProductBySku(sku))
   .filter(Boolean);
 
-const faq = [
-  { q: `Как заказать металлопрокат в ${city.name}?`, a: "Выберите позиции в каталоге, добавьте в заявку или позвоните менеджеру — уточним наличие и подготовим расчёт." },
-  { q: `Есть ли доставка в ${city.name}?`, a: city.delivery },
-  { q: "Можно ли получить счёт для организации?", a: "Да, работаем с юридическими лицами: счёт, закрывающие документы, поставка партиями под объект." },
-];
+const faq = cityFaq(city);
 
 const faqSchema = buildFaqSchema(faq);
 const breadcrumbSchema = buildBreadcrumbSchema([
@@ -44,8 +40,8 @@ const breadcrumbSchema = buildBreadcrumbSchema([
 ---
 
 <Layout
-  title={`${city.title} — ${site.name}`}
-  description={`${city.text} ${city.delivery} Каталог металлопроката и стройматериалов.`}
+  title={cityMetaTitle(city, siteLive.name)}
+  description={cityMetaDescription(city)}
   canonical={canonical}
   schema={[faqSchema, breadcrumbSchema]}
 >

@@ -1,4 +1,5 @@
 import type { Category, Product, StockStatus } from "./types";
+import { productCanonicalUrl } from "./product-url";
 
 export const BTN_CATALOG = "📋 Каталог";
 export const BTN_SEARCH = "🔍 Найти товар";
@@ -72,13 +73,25 @@ export function productAdminKeyboard(product: Product): Record<string, unknown> 
         { text: "✏️ Название", callback_data: `et:${product.sku}` },
       ],
       [
+        { text: "📝 Описание", callback_data: `ed:${product.sku}` },
+        { text: "📐 Характеристики", callback_data: `es:${product.sku}` },
+      ],
+      [{ text: "🖼 Фото (URL)", callback_data: `ei:${product.sku}` }],
+      [
         { text: "✅ В наличии", callback_data: `st:${product.sku}:in_stock` },
         { text: "📦 Под заказ", callback_data: `st:${product.sku}:on_order` },
       ],
       [{ text: "❌ Нет в наличии", callback_data: `st:${product.sku}:out_of_stock` }],
+      [{ text: "🔗 На сайте", url: productCanonicalUrl(product) }],
       [{ text: "🗑 Удалить", callback_data: `del:${product.sku}` }],
       [{ text: "📋 Каталог", callback_data: "cats" }],
     ],
+  };
+}
+
+export function skipDescriptionKeyboard(): Record<string, unknown> {
+  return {
+    inline_keyboard: [[{ text: "Пропустить", callback_data: "addskip" }]],
   };
 }
 

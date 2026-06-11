@@ -1,6 +1,11 @@
 import type { APIRoute } from "astro";
 import type { LeadPayload } from "@/lib/types";
-import { formatLeadTelegramMessage, isTelegramConfiguredForLeads, sendTelegramMessage } from "@/lib/telegram";
+import {
+  formatLeadTelegramMessage,
+  getBotPublicLabel,
+  isTelegramConfiguredForLeads,
+  sendLeadTelegramMessage,
+} from "@/lib/telegram";
 
 export const prerender = false;
 
@@ -71,16 +76,14 @@ export const POST: APIRoute = async ({ request, clientAddress }) => {
   if (!isTelegramConfiguredForLeads()) {
     return new Response(
       JSON.stringify({
-        error: "Telegram не подключён. Админу нужно нажать /start в боте @proffinvest23_bot.",
+        error: `Telegram не подключён. Админу нужно нажать /start в боте ${getBotPublicLabel()}.`,
       }),
       { status: 503, headers: { "Content-Type": "application/json" } },
     );
   }
 
-  const telegramMessage = formatLeadTelegramMessage(body);
-
   try {
-    await sendTelegramMessage(telegramMessage);
+    await sendLeadTelegramMessage(body);
     await sendCrm(body).catch(() => {
       /* CRM опционален — не блокируем заявку */
     });

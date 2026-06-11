@@ -11,6 +11,8 @@ import { rankProducts } from "./search";
 import type { Product, StockStatus } from "./types";
 import { stockToLabel } from "./product-utils";
 import { resetSession, getSession, setSession, type AddDraft, type AdminSession } from "./telegram-admin-session";
+import { logTelegramCatalogAction } from "./telegram-audit-log";
+import { productCanonicalUrl } from "./product-url";
 import {
   BTN_ADD,
   BTN_CATALOG,
@@ -22,6 +24,7 @@ import {
   productAdminKeyboard,
   productsKeyboard,
   searchKeyboard,
+  skipDescriptionKeyboard,
 } from "./telegram-keyboard";
 import {
   handleSettingsCallback,
@@ -66,6 +69,8 @@ export function formatProductAdmin(product: Product): string {
     `<b>Наличие:</b> ${esc(product.stockLabel)}`,
     product.specsRaw ? `\n<b>Характеристики:</b>\n${esc(product.specsRaw)}` : "",
     product.description ? `\n${esc(product.description.slice(0, 300))}${product.description.length > 300 ? "…" : ""}` : "",
+    product.image ? `\n<b>Фото:</b> ${esc(product.image)}` : "",
+    `\n<b>Сайт:</b> ${esc(productCanonicalUrl(product))}`,
   ]
     .filter(Boolean)
     .join("\n");
@@ -233,6 +238,7 @@ export function handleSessionText(chatId: number, text: string): BotReply | null
       return { text: "Товар не найден." };
     }
     updateProduct(session.sku, productInput(product, { price }));
+    logTelegramCatalogAction(chatId, "edit_price", session.sku);
     resetSession(chatId);
     return buildProductReply(session.sku) ?? { text: "✅ Цена обновлена." };
   }
@@ -245,8 +251,50 @@ export function handleSessionText(chatId: number, text: string): BotReply | null
       return { text: "Товар не найден." };
     }
     updateProduct(session.sku, productInput(product, { title: text }));
+    logTelegramCatalogAction(chatId, "edit_title", session.sku);
     resetSession(chatId);
     return buildProductReply(session.sku) ?? { text: "✅ Название обновлено." };
+  }
+
+  if (session.step === "edit_description") {
+    const product = getProductBySku(session.sku);
+    if (!product) {
+      resetSession(chatId);
+      return { text: "Товар не найден." };
+    }
+    updateProduct(session.sku, productInput(product, { description: text }));
+    logTelegramCatalogAction(chatId, "edit_description", session.sku);
+    resetSession(chatId);
+    return buildProductReply(session.sku) ?? { text: "✅ Описание обновлено." };
+  }
+
+  if (session.step === "edit_specs") {
+    const product = getProductBySku(session.sku);
+    if (!product) {
+      resetSession(chatId);
+      return { text: "Товар не найден." };
+    }
+    updateProduct(session.sku, productInput(product, { specsRaw: text }));
+    logTelegramCatalogAction(chatId, "edit_specs", session.sku);
+    resetSession(chatId);
+    return buildProductReply(session.sku) ?? { text: "✅ Характеристики обновлены." };
+  }
+
+  if (session.step === "edit_image") {
+    const product = getProductBySku(session.sku);
+    if (!product) {
+      resetSession(chatId);
+      return { text: "Товар не найден." };
+    }
+    const image = text === "-" || text === "—" ? "" : text;
+    updateProduct(session.sku, productInput(product, { image }));
+    logTelegramCatalogAction(chatId, "edit_image", session.sku);
+    resetSession(chatId);
+    return buildProductReply(session.sku) ?? { text: "✅ Фото обновлено." };
+  }
+
+  if (session.step === "add_description") {
+    return finishNewProduct(chatId, session.draft, text);
   }
 
   return null;
@@ -254,7 +302,14 @@ export function handleSessionText(chatId: number, text: string): BotReply | null
 
 function productInput(
   product: Product,
-  patch: Partial<{ title: string; price: number | null; stock: StockStatus }>,
+  patch: Partial<{
+    title: string;
+    price: number | null;
+    stock: StockStatus;
+    description: string;
+    specsRaw: string;
+    image: string;
+  }>,
 ) {
   return {
     title: patch.title ?? product.title,
@@ -263,10 +318,43 @@ function productInput(
     subcategory: product.subcategory,
     price: patch.price !== undefined ? patch.price : product.price,
     stock: patch.stock ?? product.stock,
-    specsRaw: product.specsRaw,
-    description: product.description,
-    image: product.image,
+    specsRaw: patch.specsRaw ?? product.specsRaw,
+    description: patch.description ?? product.description,
+    image: patch.image !== undefined ? patch.image : product.image,
   };
+}
+
+function finishNewProduct(
+  chatId: number,
+  draft: AddDraft & { price: number | null; stock: StockStatus },
+  description: string,
+): BotReply {
+  try {
+    const product = createProduct({
+      title: draft.title,
+      category: draft.category,
+      categorySlug: draft.categorySlug,
+      price: draft.price,
+      stock: draft.stock,
+      specsRaw: "",
+      description: description.trim(),
+    });
+    logTelegramCatalogAction(chatId, "create_product", product.sku);
+    resetSession(chatId);
+    const url = productCanonicalUrl(product);
+    return {
+      text: [
+        `✅ Добавлен <b>${esc(product.sku)}</b>`,
+        esc(product.title),
+        "",
+        "Товар сразу в каталоге и в поиске на сайте.",
+        `<a href="${esc(url)}">Открыть на сайте</a>`,
+      ].join("\n"),
+      options: { html: true, replyMarkup: productAdminKeyboard(product) },
+    };
+  } catch (e) {
+    return { text: e instanceof Error ? e.message : "Ошибка" };
+  }
 }
 
 function parsePriceInput(text: string): number | null | undefined {
@@ -312,10 +400,19 @@ export function handleCallback(data: string, chatId: number): BotReply | null {
     };
   }
 
+  if (data === "addskip") {
+    const session = getSession(chatId);
+    if (session.step !== "add_description") {
+      return { text: "Сессия сброшена. ➕ Новый товар" };
+    }
+    return finishNewProduct(chatId, session.draft, "");
+  }
+
   if (data.startsWith("dely:")) {
     const sku = data.slice(5);
     try {
       deleteProduct(sku);
+      logTelegramCatalogAction(chatId, "delete_product", sku);
       resetSession(chatId);
       return {
         text: `🗑 ${esc(sku)} удалён.`,
@@ -338,6 +435,33 @@ export function handleCallback(data: string, chatId: number): BotReply | null {
     if (!getProductBySku(sku)) return { text: "Товар не найден." };
     setSession(chatId, { step: "edit_title", sku });
     return { text: `Новое название для <b>${esc(sku)}</b>:`, options: { html: true } };
+  }
+
+  if (data.startsWith("ed:")) {
+    const sku = data.slice(3);
+    if (!getProductBySku(sku)) return { text: "Товар не найден." };
+    setSession(chatId, { step: "edit_description", sku });
+    return { text: `Новое описание для <b>${esc(sku)}</b>:`, options: { html: true } };
+  }
+
+  if (data.startsWith("es:")) {
+    const sku = data.slice(3);
+    if (!getProductBySku(sku)) return { text: "Товар не найден." };
+    setSession(chatId, { step: "edit_specs", sku });
+    return {
+      text: `Характеристики для <b>${esc(sku)}</b> (текст, например «Длина: 6 м; Сталь: Ст3»):`,
+      options: { html: true },
+    };
+  }
+
+  if (data.startsWith("ei:")) {
+    const sku = data.slice(3);
+    if (!getProductBySku(sku)) return { text: "Товар не найден." };
+    setSession(chatId, { step: "edit_image", sku });
+    return {
+      text: `URL фото для <b>${esc(sku)}</b> (или «-» чтобы убрать):`,
+      options: { html: true },
+    };
   }
 
   if (data.startsWith("st:")) {
@@ -367,24 +491,18 @@ export function handleCallback(data: string, chatId: number): BotReply | null {
     if (session.step !== "add_stock") {
       return { text: "Сессия сброшена. ➕ Новый товар" };
     }
-    try {
-      const product = createProduct({
-        title: session.draft.title,
-        category: session.draft.category,
-        categorySlug: session.draft.categorySlug,
-        price: session.draft.price,
-        stock,
-        specsRaw: "",
-        description: "",
-      });
-      resetSession(chatId);
-      return {
-        text: [`✅ Добавлен <b>${esc(product.sku)}</b>`, esc(product.title), "", "Товар сразу в каталоге и в поиске на сайте."].join("\n"),
-        options: { html: true, replyMarkup: productAdminKeyboard(product) },
-      };
-    } catch (e) {
-      return { text: e instanceof Error ? e.message : "Ошибка" };
-    }
+    setSession(chatId, {
+      step: "add_description",
+      draft: { ...session.draft, stock },
+    });
+    return {
+      text: [
+        `<b>Наличие:</b> ${esc(stockToLabel(stock))}`,
+        "",
+        "Введите описание товара или нажмите «Пропустить»:",
+      ].join("\n"),
+      options: { html: true, replyMarkup: skipDescriptionKeyboard() },
+    };
   }
 
   return null;
@@ -395,6 +513,7 @@ function updateStock(sku: string, stock: StockStatus, chatId: number): BotReply 
   if (!product) return { text: "Товар не найден." };
 
   updateProduct(sku, productInput(product, { stock }));
+  logTelegramCatalogAction(chatId, "edit_stock", sku);
   resetSession(chatId);
   const updated = getProductBySku(sku)!;
   return {

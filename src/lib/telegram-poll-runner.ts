@@ -3,6 +3,26 @@ import { getTelegramBotToken, telegramApi } from "./telegram-api";
 
 const POLL_TIMEOUT_SEC = 50;
 let running = false;
+let lastPollAt: string | null = null;
+let lastUpdateAt: string | null = null;
+let pollErrors = 0;
+
+export function getPollHealth(): {
+  pollRunning: boolean;
+  lastPollAt: string | null;
+  lastUpdateAt: string | null;
+  pollErrors: number;
+} {
+  return { pollRunning: running, lastPollAt, lastUpdateAt, pollErrors };
+}
+
+function touchPoll(): void {
+  lastPollAt = new Date().toISOString();
+}
+
+function touchUpdate(): void {
+  lastUpdateAt = new Date().toISOString();
+}
 
 async function sleep(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
@@ -38,7 +58,10 @@ async function pollLoop(): Promise<void> {
         (POLL_TIMEOUT_SEC + 20) * 1000,
       );
 
+      touchPoll();
+
       if (!data.ok) {
+        pollErrors += 1;
         console.error("[telegram] getUpdates:", data.description ?? "unknown error");
         await sleep(5000);
         continue;
@@ -46,14 +69,17 @@ async function pollLoop(): Promise<void> {
 
       for (const update of data.result ?? []) {
         offset = update.update_id + 1;
+        touchUpdate();
         try {
           await handleTelegramUpdate(update);
         } catch (error) {
+          pollErrors += 1;
           const chatId = update.message?.chat.id ?? update.callback_query?.message?.chat.id;
           console.error(`[telegram] Ошибка для ${chatId ?? "?"}:`, error);
         }
       }
     } catch (error) {
+      pollErrors += 1;
       console.error(
         "[telegram] Сеть / API, повтор через 5 с...",
         error instanceof Error ? error.message : error,

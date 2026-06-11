@@ -1,4 +1,5 @@
-import { getTelegramBotToken } from "./telegram-api";
+import { getTelegramBotToken, telegramApi } from "./telegram-api";
+import { getTelegramDataPaths } from "./telegram-data-paths";
 import { startTelegramPolling } from "./telegram-poll-runner";
 import { syncTelegramWebhook } from "./telegram-webhook-sync";
 
@@ -56,5 +57,27 @@ export function ensureTelegramBotRunning(): void {
     return;
   }
 
-  startTelegramPolling();
+  void validateTelegramStartup().then(() => startTelegramPolling());
+}
+
+async function validateTelegramStartup(): Promise<void> {
+  const token = getTelegramBotToken();
+  if (!token) return;
+
+  const dataWritable = Object.values(getTelegramDataPaths()).every((p) => p.writable);
+  if (!dataWritable) {
+    console.warn(
+      "[telegram] Нет записи в data/ или src/data — каталог и админы могут не сохраняться. Проверьте Docker volumes.",
+    );
+  }
+
+  const me = await telegramApi<{ username?: string }>("getMe", undefined, 15_000);
+  if (!me.ok) {
+    console.error(
+      `[telegram] getMe failed: ${me.description ?? "unknown"}. Проверьте TELEGRAM_BOT_TOKEN или TELEGRAM_PROXY.`,
+    );
+    return;
+  }
+
+  console.log(`[telegram] API OK — @${me.result?.username ?? "bot"}`);
 }

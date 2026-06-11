@@ -8,8 +8,11 @@ import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { parseCategoryPageCallback, parseProductCallback } from "../src/lib/telegram-callback-routes";
 import { handleCallback, handleMenuButton } from "../src/lib/telegram-admin-bot";
-import { resetSession } from "../src/lib/telegram-admin-session";
+import { getSession, resetSession, setSession } from "../src/lib/telegram-admin-session";
+import { getAuditLogPath } from "../src/lib/telegram-audit-log";
+import { getSessionStorePath } from "../src/lib/telegram-session-store";
 import { MENU_BUTTONS, BTN_HELP } from "../src/lib/telegram-keyboard";
+import { productCanonicalUrl } from "../src/lib/product-url";
 import { loadCategories, loadProducts } from "../src/lib/product-store";
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
@@ -83,14 +86,29 @@ if (firstCat) {
 const firstProduct = loadProducts()[0];
 if (firstProduct) {
   assert(`p:${firstProduct.sku}`, !!handleCallback(`p:${firstProduct.sku}`, TEST_CHAT)?.text);
+  resetSession(TEST_CHAT);
+  assert(`ed:${firstProduct.sku}`, !!handleCallback(`ed:${firstProduct.sku}`, TEST_CHAT)?.text);
+  assert(`es:${firstProduct.sku}`, !!handleCallback(`es:${firstProduct.sku}`, TEST_CHAT)?.text);
+  assert(`ei:${firstProduct.sku}`, !!handleCallback(`ei:${firstProduct.sku}`, TEST_CHAT)?.text);
+  const url = productCanonicalUrl(firstProduct);
+  assert("productCanonicalUrl", url.startsWith("https://") && url.includes(firstProduct.categorySlug));
 } else {
   console.log("  — нет товаров для проверки p:");
 }
 
-console.log("\n4. Файлы данных");
+console.log("\n4. Персистентные сессии");
+resetSession(TEST_CHAT);
+setSession(TEST_CHAT, { step: "search" });
+assert("session save/load", getSession(TEST_CHAT).step === "search");
+resetSession(TEST_CHAT);
+assert("session reset", getSession(TEST_CHAT).step === "idle");
+
+console.log("\n5. Файлы данных");
 const paths = [
   ["data/telegram-admins.json", join(root, "data", "telegram-admins.json")],
   ["data/site-settings.json", join(root, "data", "site-settings.json")],
+  [getSessionStorePath(), join(root, getSessionStorePath())],
+  [getAuditLogPath(), join(root, getAuditLogPath())],
   ["src/data/products.json", join(root, "src/data/products.json")],
   ["src/data/categories.json", join(root, "src/data/categories.json")],
 ] as const;
@@ -104,7 +122,7 @@ for (const [label, path] of paths) {
   else fail(`${label} (нет и нельзя создать)`);
 }
 
-console.log(`\n5. Каталог: ${loadCategories().length} категорий, ${loadProducts().length} товаров`);
+console.log(`\n6. Каталог: ${loadCategories().length} категорий, ${loadProducts().length} товаров`);
 
 console.log(`\n=== Итог: ${passed} OK, ${failed} ошибок ===`);
 if (failed > 0) process.exit(1);

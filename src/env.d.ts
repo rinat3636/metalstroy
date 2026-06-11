@@ -11,6 +11,7 @@ interface ImportMetaEnv {
   readonly PUBLIC_SITE_OGRN: string;
   readonly PUBLIC_YANDEX_METRIKA_ID: string;
   readonly PUBLIC_YANDEX_VERIFICATION: string;
+  readonly PUBLIC_GOOGLE_SITE_VERIFICATION: string;
   readonly PUBLIC_YANDEX_MAP_IFRAME: string;
   readonly TELEGRAM_BOT_TOKEN: string;
   readonly TELEGRAM_PROXY: string;

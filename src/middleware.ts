@@ -16,9 +16,18 @@ function redirect301(url: string): Response {
 }
 
 export const onRequest = defineMiddleware(async (context, next) => {
+  if (context.isPrerendered) {
+    return next();
+  }
+
   ensureTelegramBotRunning();
 
-  const host = context.request.headers.get("host")?.split(":")[0].toLowerCase() ?? "";
+  const hostHeader = context.request.headers.get("host");
+  if (!hostHeader) {
+    return next();
+  }
+
+  const host = hostHeader.split(":")[0].toLowerCase();
   const domain = getPrimaryDomain().toLowerCase();
 
   if (host === `www.${domain}`) {
@@ -28,7 +37,7 @@ export const onRequest = defineMiddleware(async (context, next) => {
     return redirect301(target.toString());
   }
 
-  const sub = parseSubdomain(context.request.headers.get("host"));
+  const sub = parseSubdomain(hostHeader);
   if (sub) {
     context.locals.subdomain = sub;
 

@@ -1,6 +1,7 @@
 import citiesData from "@/data/cities.json";
 import { loadCategories } from "./product-store";
 import type { Category, City } from "./types";
+import { readPublicEnv } from "./runtime-env";
 
 const cities = citiesData as City[];
 
@@ -15,20 +16,12 @@ export interface SubdomainContext {
 }
 
 export function getPrimaryDomain(): string {
-  const fromProcess =
-    typeof process !== "undefined" ? process.env.PUBLIC_SITE_DOMAIN?.trim() : undefined;
-  if (fromProcess) return fromProcess;
-  return import.meta.env.PUBLIC_SITE_DOMAIN?.trim() || "ps-invest.ru";
+  return readPublicEnv("PUBLIC_SITE_DOMAIN") || "ps-invest.ru";
 }
 
 export function getSiteOrigin(): string {
-  const fromProcess =
-    typeof process !== "undefined" ? process.env.PUBLIC_SITE_URL?.trim() : undefined;
-  if (fromProcess) return fromProcess.replace(/\/$/, "");
-
-  const fromMeta = import.meta.env.PUBLIC_SITE_URL?.trim();
-  if (fromMeta) return fromMeta.replace(/\/$/, "");
-
+  const url = readPublicEnv("PUBLIC_SITE_URL");
+  if (url) return url.replace(/\/$/, "");
   return `https://${getPrimaryDomain()}`;
 }
 

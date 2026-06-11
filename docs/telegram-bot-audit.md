@@ -138,9 +138,9 @@ TELEGRAM_WEBHOOK_SECRET=    # только для webhook mode
 TELEGRAM_AUTO_START=0       # отключить автостарт
 ```
 
-## Volumes (Railway)
+## Volumes (Railway / Docker)
 
-- `/app/data` → `telegram-admins.json`, `site-settings.json`, `catalog.json`
+- `/app/data` → `telegram-admins.json`, `telegram-sessions.json`, `telegram-audit-log.json`, `site-settings.json`, `catalog.json`
 - `/app/src/data` → `products.json`, `categories.json`
 
 Проверка: `GET /api/telegram/status` → `dataWritable: true`, `catalog.products` > 0
@@ -155,9 +155,30 @@ TELEGRAM_AUTO_START=0       # отключить автостарт
 ## Что проверить после деплоя
 
 1. Логи: `[telegram] Старт (mode=poll, token=ok)`
-2. Логи: `[telegram] Long polling — @proffinvest23_bot`
-3. `/api/telegram/status` → `"hint": "ok"`, `dataWritable: true`
-4. `npm run telegram:audit` локально — 0 ошибок
-5. Написать боту `/start` — ответ в течение 1–2 сек
-6. 📁 Категории → изменить описание → проверить на сайте
-7. 🏢 Контакты → изменить телефон → проверить в шапке сайта
+2. Логи: `[telegram] API OK — @proffinvest23_bot`
+3. Логи: `[telegram] Long polling — @proffinvest23_bot`
+4. `/api/telegram/status` → `"hint": "ok"`, `dataWritable: true`, `pollRunning: true`, `pollBlockedByWebhook: false`
+5. `npm run telegram:audit` локально — 0 ошибок
+6. Написать боту `/start` — ответ в течение 1–2 сек
+7. 📁 Категории → изменить описание → проверить на сайте
+8. 🏢 Контакты → изменить телефон → проверить в шапке сайта
+9. Заявка с сайта → сообщение с кнопками «Позвонить» и «Открыть сайт»
+10. `/admins` — показывает число подключённых админов
+
+## Новые возможности (2025)
+
+| Функция | Описание |
+|---------|----------|
+| Сессии на диске | `data/telegram-sessions.json` — мастер «Новый товар» переживает рестарт |
+| Редактирование товара | Описание, характеристики, URL фото, ссылка «На сайте» |
+| Заявки | Кликабельный телефон + inline-кнопки |
+| Мониторинг poll | `GET /api/telegram/status` → `lastPollAt`, `lastUpdateAt`, `pollErrors` |
+| Журнал изменений | `data/telegram-audit-log.json` (последние 100 действий) |
+
+## Reg.ru / VPS
+
+На VPS Reg.ru используйте **`TELEGRAM_MODE=poll`** (по умолчанию). Webhook не требуется.
+
+Volumes Docker (`docker-compose.yml`):
+- `/app/data` — admins, sessions, site-settings, audit-log
+- `/app/src/data` — products.json, categories.json

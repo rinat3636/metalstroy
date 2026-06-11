@@ -19,7 +19,7 @@ const webhookUrl = `${baseUrl}/api/telegram/webhook`;
 
 const result = await telegramApi("setWebhook", {
   url: webhookUrl,
-  allowed_updates: ["message"],
+  allowed_updates: ["message", "callback_query"],
   ...(secret ? { secret_token: secret } : {}),
 });
 

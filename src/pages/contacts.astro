@@ -4,14 +4,36 @@ import Breadcrumbs from "@/components/Breadcrumbs.astro";
 import LeadForm from "@/components/LeadForm";
 import YandexMap from "@/components/YandexMap.astro";
 import { loadSite } from "@/lib/data";
+import { absoluteUrl, buildBreadcrumbSchema } from "@/lib/seo";
 
 const site = loadSite();
 const hasReq = site.inn || site.kpp || site.ogrn;
+
+const breadcrumbSchema = buildBreadcrumbSchema([
+  { name: "Главная", href: absoluteUrl("/") },
+  { name: "Контакты" },
+]);
+
+const contactSchema = {
+  "@context": "https://schema.org",
+  "@type": "ContactPage",
+  name: `Контакты — ${site.name}`,
+  url: absoluteUrl("/contacts/"),
+  mainEntity: {
+    "@type": "Organization",
+    name: site.name,
+    telephone: site.phone,
+    email: site.email,
+    address: site.address,
+  },
+};
 ---
 
 <Layout
   title="Контакты и заявка"
   description={`Контакты ${site.name}: телефон, email, адрес склада. Оставьте заявку на расчёт металлопроката.`}
+  canonical={absoluteUrl("/contacts/")}
+  schema={[breadcrumbSchema, contactSchema]}
 >
   <div class="page-header">
     <div class="container">
@@ -38,8 +60,8 @@ const hasReq = site.inn || site.kpp || site.ogrn;
       <article class="contact-card">
         <h3>Мессенджеры</h3>
         <p>
-          <a href={site.telegram} target="_blank" rel="noopener">Telegram</a><br />
-          <a href={site.whatsapp} target="_blank" rel="noopener">WhatsApp</a>
+          <a href={site.telegram} target="_blank" rel="noopener" data-goal="telegram_click">Telegram</a><br />
+          <a href={site.whatsapp} target="_blank" rel="noopener" data-goal="whatsapp_click">WhatsApp</a>
         </p>
       </article>
       <article class="contact-card">
