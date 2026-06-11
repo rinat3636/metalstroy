@@ -3,6 +3,6 @@ builder = "dockerfile"
 dockerfilePath = "Dockerfile"
 
 [deploy]
-startCommand = "node ./dist/server/entry.mjs"
+startCommand = "npm start"
 healthcheckPath = "/"
 restartPolicyType = "on_failure"

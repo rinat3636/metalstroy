@@ -4,7 +4,7 @@
     "builder": "DOCKERFILE"
   },
   "deploy": {
-    "startCommand": "node ./dist/server/entry.mjs",
+    "startCommand": "npm start",
     "restartPolicyType": "ON_FAILURE"
   }
 }

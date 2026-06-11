@@ -3,8 +3,12 @@ import { handleTelegramUpdate } from "@/lib/telegram-bot";
 
 export const prerender = false;
 
+function readWebhookSecret(): string | undefined {
+  return process.env.TELEGRAM_WEBHOOK_SECRET?.trim() || import.meta.env.TELEGRAM_WEBHOOK_SECRET?.trim();
+}
+
 export const POST: APIRoute = async ({ request }) => {
-  const secret = import.meta.env.TELEGRAM_WEBHOOK_SECRET?.trim();
+  const secret = readWebhookSecret();
   if (secret) {
     const header = request.headers.get("X-Telegram-Bot-Api-Secret-Token");
     if (header !== secret) {

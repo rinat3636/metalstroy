@@ -102,10 +102,11 @@ export async function handleTelegramMessage(message: TelegramUpdateMessage): Pro
   const chat = message.chat;
   const text = message.text?.trim() ?? "";
 
-  addTelegramAdmin(chat);
+  const isNewAdmin = addTelegramAdmin(chat);
 
   if (isStartCommand(text) || !text) {
-    await reply(chat.id, addTelegramAdmin(chat) ? BOT_ADMIN_CONNECTED_TEXT : BOT_ALREADY_CONNECTED_TEXT);
+    console.log(`[telegram] /start от chat ${chat.id} (@${chat.username ?? "?"})`);
+    await reply(chat.id, isNewAdmin ? BOT_ADMIN_CONNECTED_TEXT : BOT_ALREADY_CONNECTED_TEXT);
     return;
   }
 

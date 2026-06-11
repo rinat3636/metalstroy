@@ -85,6 +85,12 @@ npm run preview
 node ./dist/server/entry.mjs
 ```
 
+Или (рекомендуется — бот стартует сразу):
+
+```powershell
+npm start
+```
+
 ## Telegram-бот (открытый доступ)
 
 `TELEGRAM_CHAT_ID` не нужен. **Любой**, кто запускает бота (`/start` или любое сообщение), получает уведомления о заявках.
@@ -124,6 +130,16 @@ npm run telegram:test
 ```
 
 Заявки с сайта приходят **всем админам**, кто нажал `/start`. Клиентам бот не нужен — они оставляют заявку на сайте.
+
+### Бот не отвечает на /start?
+
+1. **На Railway:** проверьте `TELEGRAM_BOT_TOKEN` в Variables
+2. Откройте `https://ваш-домен/api/telegram/status` — должно быть `apiOk: true`, `started: true`
+3. Логи деплоя: строка `[telegram] Long polling — @proffinvest23_bot`
+4. Снимите старый webhook: `npm run telegram:webhook:off` (или redeploy — poll снимает сам)
+5. **Локально в ДНР:** нужен VPN или `TELEGRAM_PROXY` — иначе API недоступен
+
+Полный аудит: [docs/telegram-bot-audit.md](docs/telegram-bot-audit.md)
 
 ## Переменные окружения
 
