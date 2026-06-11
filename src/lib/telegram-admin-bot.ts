@@ -23,9 +23,12 @@ import {
   productsKeyboard,
   searchKeyboard,
 } from "./telegram-keyboard";
-import type { TelegramSendOptions } from "./telegram";
-
-export type BotReply = { text: string; options?: TelegramSendOptions };
+import {
+  handleSettingsCallback,
+  handleSettingsMenuButton,
+  handleSettingsSessionText,
+} from "./telegram-settings-admin";
+export type { BotReply } from "./telegram-settings-admin";
 
 function esc(text: string): string {
   return text
@@ -161,6 +164,9 @@ export function buildAddStockReply(draft: AddDraft & { price: number | null }): 
 }
 
 export function handleMenuButton(text: string, chatId: number): BotReply | null {
+  const settings = handleSettingsMenuButton(text, chatId);
+  if (settings) return settings;
+
   switch (text) {
     case BTN_CATALOG:
       resetSession(chatId);
@@ -178,6 +184,9 @@ export function handleMenuButton(text: string, chatId: number): BotReply | null 
 
 export function handleSessionText(chatId: number, text: string): BotReply | null {
   const session = getSession(chatId);
+
+  const settingsReply = handleSettingsSessionText(chatId, text);
+  if (settingsReply) return settingsReply;
 
   if (session.step === "search") {
     resetSession(chatId);
@@ -252,6 +261,9 @@ function parsePriceInput(text: string): number | null | undefined {
 }
 
 export function handleCallback(data: string, chatId: number): BotReply | null {
+  const settings = handleSettingsCallback(data, chatId);
+  if (settings) return settings;
+
   if (data === "cats") {
     resetSession(chatId);
     return buildCategoriesReply();

@@ -1,11 +1,14 @@
 import citiesData from "@/data/cities.json";
-import categoriesData from "@/data/categories.json";
 import type { Category, City } from "./types";
+import { loadCategories } from "./product-store";
 import { getPrimaryDomain, getSiteOrigin, subdomainUrl } from "./subdomains";
 import { withBase } from "./paths";
 
 const cities = citiesData as City[];
-const categories = categoriesData as Category[];
+
+function getCategories(): Category[] {
+  return loadCategories();
+}
 
 export interface BreadcrumbItem {
   name: string;
@@ -107,6 +110,7 @@ export {
 
 export function listCityCategoryPairs(): Array<{ city: City; category: Category }> {
   const pairs: Array<{ city: City; category: Category }> = [];
+  const categories = getCategories();
   for (const city of cities) {
     for (const category of categories) {
       pairs.push({ city, category });
@@ -120,7 +124,7 @@ export function listStaticSeoPaths(): string[] {
   for (const city of cities) {
     paths.push(`/cities/${city.slug}/`);
   }
-  for (const category of categories) {
+  for (const category of getCategories()) {
     paths.push(`/catalog/${category.slug}/`);
   }
   for (const { city, category } of listCityCategoryPairs()) {
@@ -155,7 +159,7 @@ export function listAllSitemapUrls(): SitemapEntry[] {
     entries.push({ loc: subdomainUrl(city.slug), priority: "0.9", changefreq: "weekly" });
   }
 
-  for (const category of categories) {
+  for (const category of getCategories()) {
     entries.push({ loc: subdomainUrl(category.slug), priority: "0.88", changefreq: "weekly" });
   }
 
@@ -170,4 +174,4 @@ export function listAllSitemapUrls(): SitemapEntry[] {
   return entries;
 }
 
-export { cities, categories, getPrimaryDomain, getSiteOrigin };
+export { cities, getCategories as categories, getPrimaryDomain, getSiteOrigin };

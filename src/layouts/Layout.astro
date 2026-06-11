@@ -5,7 +5,7 @@ import SiteFooter from "@/components/SiteFooter.astro";
 import MobileBar from "@/components/MobileBar.astro";
 import QuoteApp from "@/components/QuoteApp";
 import Analytics from "@/components/Analytics.astro";
-import { site } from "@/lib/data";
+import { loadSite } from "@/lib/data";
 import { withBase } from "@/lib/paths";
 import { buildWebSiteSchema } from "@/lib/seo";
 
@@ -28,6 +28,7 @@ const {
   ogImage,
   ogType = "website",
 } = Astro.props;
+const site = loadSite();
 const fullTitle = title.includes(site.name) ? title : `${title} — ${site.name}`;
 const canonicalUrl = canonical ?? Astro.url.href.split("?")[0];
 const ogImageUrl = ogImage

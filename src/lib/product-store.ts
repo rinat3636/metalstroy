@@ -4,6 +4,8 @@ import { filterProducts } from "./search";
 import type { Category, Product } from "./types";
 import { buildProduct, buildProductSlug, nextSku, productToCatalogRaw, type ProductInput } from "./product-utils";
 
+import { slugify } from "./product-utils";
+
 const root = process.cwd();
 const PRODUCTS_PATH = join(root, "src/data/products.json");
 const CATEGORIES_PATH = join(root, "src/data/categories.json");
@@ -40,16 +42,22 @@ export function searchProducts(query: string): Product[] {
   return filterProducts(loadProducts(), query);
 }
 
-function recalcCategories(products: Product[]): Category[] {
-  const categories = loadCategories();
+function saveCategories(categories: Category[]): Category[] {
+  const products = loadProducts();
   const counts = new Map<string, number>();
   for (const p of products) {
     counts.set(p.categorySlug, (counts.get(p.categorySlug) ?? 0) + 1);
   }
-  return categories.map((cat) => ({
+  const merged = categories.map((cat) => ({
     ...cat,
     count: counts.get(cat.slug) ?? 0,
   }));
+  writeJson(CATEGORIES_PATH, merged);
+  return merged;
+}
+
+function recalcCategories(products: Product[]): Category[] {
+  return saveCategories(loadCategories());
 }
 
 function syncCatalogRaw(products: Product[]): void {
@@ -59,9 +67,72 @@ function syncCatalogRaw(products: Product[]): void {
 
 function persist(products: Product[]): Product[] {
   writeJson(PRODUCTS_PATH, products);
-  writeJson(CATEGORIES_PATH, recalcCategories(products));
+  recalcCategories(products);
   syncCatalogRaw(products);
   return products;
+}
+
+export function createCategory(input: {
+  name: string;
+  description?: string;
+  seoText?: string;
+}): Category {
+  const name = input.name.trim();
+  if (name.length < 2) throw new Error("Название категории слишком короткое");
+
+  const categories = loadCategories();
+  let baseSlug = slugify(name);
+  if (!baseSlug) throw new Error("Не удалось создать slug из названия");
+
+  let slug = baseSlug;
+  let n = 2;
+  while (categories.some((c) => c.slug === slug)) {
+    slug = `${baseSlug}-${n++}`;
+  }
+
+  const category: Category = {
+    name,
+    slug,
+    count: 0,
+    description: input.description?.trim() || `${name} — каталог металлопроката и стройматериалов.`,
+    seoText: input.seoText?.trim() || "",
+  };
+
+  saveCategories([...categories, category]);
+  return category;
+}
+
+export function updateCategory(
+  slug: string,
+  patch: Partial<Pick<Category, "name" | "description" | "seoText">>,
+): Category {
+  const categories = loadCategories();
+  const index = categories.findIndex((c) => c.slug === slug);
+  if (index === -1) throw new Error("Категория не найдена");
+
+  const current = categories[index];
+  const updated: Category = {
+    ...current,
+    ...(patch.name !== undefined ? { name: patch.name.trim() } : {}),
+    ...(patch.description !== undefined ? { description: patch.description.trim() } : {}),
+    ...(patch.seoText !== undefined ? { seoText: patch.seoText.trim() } : {}),
+  };
+
+  if (updated.name.length < 2) throw new Error("Название слишком короткое");
+
+  const nextCategories = [...categories];
+  nextCategories[index] = updated;
+  saveCategories(nextCategories);
+
+  if (patch.name && patch.name !== current.name) {
+    const products = loadProducts();
+    const nextProducts = products.map((p) =>
+      p.categorySlug === slug ? { ...p, category: updated.name } : p,
+    );
+    persist(nextProducts);
+  }
+
+  return getCategoryBySlug(slug)!;
 }
 
 export function createProduct(input: ProductInput): Product {

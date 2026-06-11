@@ -1,7 +1,9 @@
 ---
 import HeaderSearch from "@/components/HeaderSearch";
-import { site } from "@/lib/data";
+import { loadSite } from "@/lib/data";
 import { withBase } from "@/lib/paths";
+
+const site = loadSite();
 ---
 
 <header class="site-header">

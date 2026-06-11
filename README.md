@@ -34,7 +34,7 @@ PUBLIC_SITE_EMAIL=sales@...
 Опционально `TELEGRAM_MODE=webhook` + `npm run telegram:webhook:set -- https://ваш-домен.railway.app`
 
 > **Volumes на Railway** (чтобы правки админки не пропадали при redeploy):
-> - `/app/data` — `telegram-admins.json`, `catalog.json`
+> - `/app/data` — `telegram-admins.json`, `catalog.json`, `site-settings.json`
 > - `/app/src/data` — `products.json`, `categories.json`
 > - `/app/public/assets/catalog-images` — загруженные фото товаров
 
@@ -130,6 +130,8 @@ npm run telegram:test
 ```
 
 Заявки с сайта приходят **всем админам**, кто нажал `/start`. Клиентам бот не нужен — они оставляют заявку на сайте.
+
+**Админка в боте:** товары, **категории** (добавить/редактировать), **телефон и реквизиты** (сразу на сайте).
 
 ### Бот не отвечает на /start?
 

@@ -1,4 +1,5 @@
 import { withBase } from "./paths";
+import { loadSiteSettings } from "./site-store";
 import productsData from "@/data/products.json";
 import categoriesData from "@/data/categories.json";
 import citiesData from "@/data/cities.json";
@@ -9,15 +10,10 @@ export const products = productsData as Product[];
 export const categories = categoriesData as Category[];
 export const cities = citiesData as City[];
 
-export const site = {
+const STATIC_SITE = {
   name: "Профсталь-инвест",
-  legalName: 'ООО "Профсталь-инвест"',
   tagline: "Металлопрокат и стройматериалы в ДНР",
-  phone: import.meta.env.PUBLIC_SITE_PHONE ?? "+7 (949) 000-00-00",
-  email: import.meta.env.PUBLIC_SITE_EMAIL ?? "sales@ps-invest.ru",
-  address: import.meta.env.PUBLIC_SITE_ADDRESS ?? "г. Донецк, ДНР",
   addressNote: "Точный адрес склада и схема проезда — после подтверждения заказа",
-  schedule: "Пн–Сб: 8:00–18:00",
   metrikaId: import.meta.env.PUBLIC_YANDEX_METRIKA_ID ?? "",
   telegram: import.meta.env.PUBLIC_SITE_TELEGRAM ?? "https://t.me/proffinvest23_bot",
   whatsapp: import.meta.env.PUBLIC_SITE_WHATSAPP ?? "https://wa.me/79490000000",
@@ -25,10 +21,16 @@ export const site = {
   gis2: import.meta.env.PUBLIC_2GIS_URL ?? "",
   geoLat: import.meta.env.PUBLIC_SITE_GEO_LAT ?? "",
   geoLng: import.meta.env.PUBLIC_SITE_GEO_LNG ?? "",
-  inn: import.meta.env.PUBLIC_SITE_INN ?? "",
-  kpp: import.meta.env.PUBLIC_SITE_KPP ?? "",
-  ogrn: import.meta.env.PUBLIC_SITE_OGRN ?? "",
 };
+
+/** Актуальные контакты и реквизиты (бот пишет в data/site-settings.json) */
+export function loadSite() {
+  const settings = loadSiteSettings();
+  return { ...STATIC_SITE, ...settings };
+}
+
+/** Снимок на момент сборки — предпочитайте loadSite() на SSR-страницах */
+export const site = loadSite();
 
 export function getProductBySlug(slug: string): Product | undefined {
   return products.find((p) => p.slug === slug);

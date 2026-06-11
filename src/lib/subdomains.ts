@@ -1,9 +1,8 @@
 import citiesData from "@/data/cities.json";
-import categoriesData from "@/data/categories.json";
+import { loadCategories } from "./product-store";
 import type { Category, City } from "./types";
 
 const cities = citiesData as City[];
-const categories = categoriesData as Category[];
 
 const RESERVED = new Set(["www", "api", "mail", "smtp", "ftp", "admin", "staging", "dev"]);
 
@@ -59,7 +58,7 @@ export function parseSubdomain(hostHeader: string | null): SubdomainContext | nu
     return { kind: "city", slug: city.slug, name: city.name };
   }
 
-  const category = categories.find((c) => c.slug === sub);
+  const category = loadCategories().find((c) => c.slug === sub);
   if (category) {
     return { kind: "category", slug: category.slug, name: category.name };
   }
@@ -77,7 +76,7 @@ export function listCitySubdomains(): SubdomainContext[] {
 }
 
 export function listCategorySubdomains(): SubdomainContext[] {
-  return categories.map((c) => ({ kind: "category" as const, slug: c.slug, name: c.name }));
+  return loadCategories().map((c) => ({ kind: "category" as const, slug: c.slug, name: c.name }));
 }
 
 export function listAllSubdomains(): SubdomainContext[] {

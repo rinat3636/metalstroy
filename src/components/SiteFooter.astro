@@ -1,11 +1,13 @@
 ---
-import { site } from "@/lib/data";
+import { loadSite } from "@/lib/data";
 import { withBase } from "@/lib/paths";
 import { buildWebSiteSchema } from "@/lib/seo";
 import { subdomainUrl } from "@/lib/subdomains";
 import { loadCategories } from "@/lib/catalog-live";
 import citiesData from "@/data/cities.json";
 import type { City } from "@/lib/types";
+
+const site = loadSite();
 
 const cities = citiesData as City[];
 const topCategories = loadCategories().slice(0, 6);

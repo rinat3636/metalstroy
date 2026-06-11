@@ -2,7 +2,9 @@
 import Layout from "@/layouts/Layout.astro";
 import Breadcrumbs from "@/components/Breadcrumbs.astro";
 import LeadForm from "@/components/LeadForm";
-import { site } from "@/lib/data";
+import { loadSite } from "@/lib/data";
+
+const site = loadSite();
 ---
 
 <Layout

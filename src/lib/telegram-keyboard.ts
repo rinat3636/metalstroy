@@ -3,9 +3,18 @@ import type { Category, Product, StockStatus } from "./types";
 export const BTN_CATALOG = "📋 Каталог";
 export const BTN_SEARCH = "🔍 Найти товар";
 export const BTN_ADD = "➕ Новый товар";
+export const BTN_CATEGORIES = "📁 Категории";
+export const BTN_COMPANY = "🏢 Контакты";
 export const BTN_HELP = "ℹ️ Помощь";
 
-export const MENU_BUTTONS = new Set([BTN_CATALOG, BTN_SEARCH, BTN_ADD, BTN_HELP]);
+export const MENU_BUTTONS = new Set([
+  BTN_CATALOG,
+  BTN_SEARCH,
+  BTN_ADD,
+  BTN_CATEGORIES,
+  BTN_COMPANY,
+  BTN_HELP,
+]);
 
 const PAGE = 8;
 
@@ -13,7 +22,8 @@ export function mainMenuKeyboard(): Record<string, unknown> {
   return {
     keyboard: [
       [{ text: BTN_CATALOG }, { text: BTN_SEARCH }],
-      [{ text: BTN_ADD }],
+      [{ text: BTN_ADD }, { text: BTN_CATEGORIES }],
+      [{ text: BTN_COMPANY }],
       [{ text: BTN_HELP }],
     ],
     resize_keyboard: true,
@@ -44,6 +54,7 @@ export function productsKeyboard(products: Product[], categorySlug: string, page
   if (nav.length) rows.push(nav);
 
   rows.push([{ text: "📋 Категории", callback_data: "cats" }]);
+  rows.push([{ text: "⚙️ Категория", callback_data: `ca:${categorySlug}` }]);
   return { inline_keyboard: rows };
 }
 
@@ -104,6 +115,57 @@ export function addStockKeyboard(): Record<string, unknown> {
       ],
       [{ text: "❌ Нет в наличии", callback_data: "as:out_of_stock" }],
       [{ text: "Отмена", callback_data: "cancel" }],
+    ],
+  };
+}
+
+export function categoriesManageKeyboard(categories: Category[]): Record<string, unknown> {
+  const rows: Array<Array<{ text: string; callback_data: string }>> = [];
+  for (let i = 0; i < categories.length; i += 2) {
+    const row = [{ text: categories[i].name, callback_data: `ca:${categories[i].slug}` }];
+    if (categories[i + 1]) {
+      row.push({ text: categories[i + 1].name, callback_data: `ca:${categories[i + 1].slug}` });
+    }
+    rows.push(row);
+  }
+  rows.push([{ text: "➕ Новая категория", callback_data: "catadd" }]);
+  rows.push([{ text: "◀️ В меню", callback_data: "cancel" }]);
+  return { inline_keyboard: rows };
+}
+
+export function categoryAdminKeyboard(slug: string): Record<string, unknown> {
+  return {
+    inline_keyboard: [
+      [
+        { text: "✏️ Название", callback_data: `cen:${slug}` },
+        { text: "📝 Описание", callback_data: `ced:${slug}` },
+      ],
+      [{ text: "🔎 SEO-текст", callback_data: `ces:${slug}` }],
+      [
+        { text: "📋 Товары", callback_data: `c:${slug}:0` },
+        { text: "◀️ Список", callback_data: "catlist" },
+      ],
+    ],
+  };
+}
+
+export function companyFieldsKeyboard(): Record<string, unknown> {
+  return {
+    inline_keyboard: [
+      [
+        { text: "📞 Телефон", callback_data: "sf:phone" },
+        { text: "✉️ Email", callback_data: "sf:email" },
+      ],
+      [
+        { text: "📍 Адрес", callback_data: "sf:address" },
+        { text: "🕐 График", callback_data: "sf:schedule" },
+      ],
+      [{ text: "🏛 Юр. название", callback_data: "sf:legalName" }],
+      [
+        { text: "ИНН", callback_data: "sf:inn" },
+        { text: "КПП", callback_data: "sf:kpp" },
+        { text: "ОГРН", callback_data: "sf:ogrn" },
+      ],
     ],
   };
 }
