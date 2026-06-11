@@ -10,6 +10,7 @@ import {
   site,
 } from "@/lib/data";
 import { withBase } from "@/lib/paths";
+import { absoluteUrl, canonicalForPage, buildBreadcrumbSchema } from "@/lib/seo";
 
 export const prerender = false;
 
@@ -26,7 +27,9 @@ const stockClass =
   product.stock === "in_stock" ? "badge badge--ok" :
   product.stock === "on_order" ? "badge badge--warn" : "badge badge--no";
 
-const productUrl = new URL(withBase(`/catalog/${categorySlug}/${product.slug}/`), Astro.site).href;
+const productUrl = absoluteUrl(`/catalog/${categorySlug}/${product.slug}/`);
+const subdomain = Astro.locals.subdomain ?? null;
+const canonical = canonicalForPage({ pathname: Astro.url.pathname, subdomain });
 
 const productSchema: Record<string, unknown> = {
   "@context": "https://schema.org",
@@ -49,25 +52,26 @@ const productSchema: Record<string, unknown> = {
   },
 };
 
-if (product.price != null) {
+if (product.price != null && product.price > 0) {
   (productSchema.offers as Record<string, unknown>).price = product.price;
 }
 
-const breadcrumbSchema = {
-  "@context": "https://schema.org",
-  "@type": "BreadcrumbList",
-  itemListElement: [
-    { "@type": "ListItem", position: 1, name: "Главная", item: Astro.site },
-    { "@type": "ListItem", position: 2, name: "Каталог", item: new URL(withBase("/catalog/"), Astro.site).href },
-    { "@type": "ListItem", position: 3, name: category?.name, item: new URL(withBase(`/catalog/${categorySlug}/`), Astro.site).href },
-    { "@type": "ListItem", position: 4, name: product.title, item: productUrl },
-  ],
-};
+if (category) {
+  productSchema.category = category.name;
+}
+
+const breadcrumbSchema = buildBreadcrumbSchema([
+  { name: "Главная", href: "/" },
+  { name: "Каталог", href: "/catalog/" },
+  { name: category?.name ?? "", href: `/catalog/${categorySlug}/` },
+  { name: product.title, href: `/catalog/${categorySlug}/${product.slug}/` },
+]);
 ---
 
 <Layout
-  title={product.title}
-  description={product.description.slice(0, 160)}
+  title={`${product.title} — ${product.sku} | купить в ДНР`}
+  description={`${product.title}. ${product.sku}. ${product.description.slice(0, 120)} Цена ${product.price != null ? `от ${product.price} ₽` : "по запросу"}.`}
+  canonical={canonical}
   schema={[productSchema, breadcrumbSchema]}
   ogImage={productImageUrl(product.image)}
   ogType="product"

@@ -21,11 +21,13 @@ $env:GITHUB_TOKEN = "ваш_токен"
 ```
 TELEGRAM_BOT_TOKEN=...
 ADMIN_PASSWORD=...
+PUBLIC_SITE_URL=https://ps-invest.ru
+PUBLIC_SITE_DOMAIN=ps-invest.ru
 PUBLIC_SITE_PHONE=+7...
 PUBLIC_SITE_EMAIL=sales@...
 ```
 
-3. **Settings** → **Networking** → **Generate Domain** (например `profstal-invest.up.railway.app`)
+3. **Settings** → **Networking** — привязать домен `ps-invest.ru` или временный `*.railway.app`
 4. После деплоя бот **запускается сам** (long polling на сервере). Webhook вручную не нужен.
 5. Любой пишет боту `/start` — становится админом, заявки с сайта приходят в Telegram.
 
@@ -35,6 +37,30 @@ PUBLIC_SITE_EMAIL=sales@...
 > - `/app/data` — `telegram-admins.json`, `catalog.json`
 > - `/app/src/data` — `products.json`, `categories.json`
 > - `/app/public/assets/catalog-images` — загруженные фото товаров
+
+## Домен ps-invest.ru и поддомены
+
+Основной сайт: **https://ps-invest.ru**
+
+Поддомены (города ДНР и категории каталога) открывают те же страницы, что и пути `/cities/…` и `/catalog/…`:
+
+| Поддомен | Страница |
+|----------|----------|
+| `donetsk.ps-invest.ru` | Металлопрокат в Донецке |
+| `makeevka.ps-invest.ru` | Макеевка |
+| `sortovoy-prokat.ps-invest.ru` | Категория «Сортовой прокат» |
+| `truba-profilnaya.ps-invest.ru` | «Труба профильная» |
+| … | все города из `/cities/` и категории из каталога |
+
+### DNS в Reg.ru
+
+1. **A-запись** `@` → IP сервера (Railway или Reg.ru VPS)
+2. **A-запись** `*` (wildcard) → тот же IP — все поддомены на один сайт
+3. **A-запись** `www` → тот же IP (опционально)
+
+Карта сайта для поисковиков: `/sitemap-seo.xml`
+
+Чеклист внешнего SEO (Яндекс, Google, 2GIS): [docs/seo-external-checklist.md](docs/seo-external-checklist.md)
 
 ## Запуск
 

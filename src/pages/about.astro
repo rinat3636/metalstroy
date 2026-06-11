@@ -1,7 +1,10 @@
 ---
 import Layout from "@/layouts/Layout.astro";
 import Breadcrumbs from "@/components/Breadcrumbs.astro";
-import { products, categories, site } from "@/lib/data";
+import { categories, site } from "@/lib/data";
+import { loadProducts } from "@/lib/catalog-live";
+
+const products = loadProducts();
 ---
 
 <Layout

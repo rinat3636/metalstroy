@@ -111,7 +111,7 @@ export default function LeadForm({ defaultCity = "" }: Props) {
           placeholder="Например: труба профильная 40х20, 20 штук, доставка в Макеевку"
         />
       </label>
-      <button className="btn btn--accent wide" type="submit" disabled={loading}>
+      <button className="btn btn--accent wide" type="submit" disabled={loading} data-goal="lead_submit">
         {loading ? "Отправка…" : "Отправить заявку"}
       </button>
       {status && (

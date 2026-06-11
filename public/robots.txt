@@ -2,4 +2,4 @@ User-agent: *
 Allow: /
 Disallow: /admin/
 
-Sitemap: https://profstal-invest.ru/sitemap-index.xml
+Sitemap: https://ps-invest.ru/sitemap-seo.xml

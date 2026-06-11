@@ -7,6 +7,7 @@ import QuoteApp from "@/components/QuoteApp";
 import Analytics from "@/components/Analytics.astro";
 import { site } from "@/lib/data";
 import { withBase } from "@/lib/paths";
+import { buildWebSiteSchema } from "@/lib/seo";
 
 interface Props {
   title: string;
@@ -28,12 +29,12 @@ const {
   ogType = "website",
 } = Astro.props;
 const fullTitle = title.includes(site.name) ? title : `${title} — ${site.name}`;
-const canonicalUrl = canonical ?? new URL(Astro.url.pathname, Astro.site).href;
+const canonicalUrl = canonical ?? Astro.url.href.split("?")[0];
 const ogImageUrl = ogImage
   ? new URL(ogImage, Astro.site).href
   : new URL(withBase("/assets/hero-warehouse.jpg"), Astro.site).href;
 
-const orgSchema = {
+const orgSchema: Record<string, unknown> = {
   "@context": "https://schema.org",
   "@type": "LocalBusiness",
   name: site.name,
@@ -41,14 +42,37 @@ const orgSchema = {
   description: site.tagline,
   telephone: site.phone,
   email: site.email,
+  image: new URL(withBase("/assets/hero-warehouse.jpg"), Astro.site).href,
   address: {
     "@type": "PostalAddress",
     addressRegion: "ДНР",
+    addressCountry: "RU",
     streetAddress: site.address,
   },
+  areaServed: {
+    "@type": "AdministrativeArea",
+    name: "Донецкая Народная Республика",
+  },
   openingHours: "Mo-Sa 08:00-18:00",
+  priceRange: "₽₽",
   url: Astro.site,
 };
+
+if (site.geoLat && site.geoLng) {
+  orgSchema.geo = {
+    "@type": "GeoCoordinates",
+    latitude: site.geoLat,
+    longitude: site.geoLng,
+  };
+}
+
+const sameAs = [site.telegram, site.whatsapp, site.yandexMaps, site.gis2].filter(Boolean);
+if (sameAs.length > 0) {
+  orgSchema.sameAs = sameAs;
+}
+
+const websiteSchema = buildWebSiteSchema();
+const jsonLd = [orgSchema, websiteSchema, ...(schema ? (Array.isArray(schema) ? schema : [schema]) : [])];
 ---
 
 <!doctype html>
@@ -79,12 +103,7 @@ const orgSchema = {
       rel="stylesheet"
       href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Onest:wght@400;500;600;700;800&display=swap"
     />
-    <script type="application/ld+json" set:html={JSON.stringify(orgSchema)} />
-    {schema && (
-      <script type="application/ld+json" set:html={JSON.stringify(
-        Array.isArray(schema) ? schema : schema
-      )} />
-    )}
+    <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
   </head>
   <body>
     <div class="top-strip">

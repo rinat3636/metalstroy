@@ -2,6 +2,10 @@
 import Layout from "@/layouts/Layout.astro";
 import CatalogBrowser from "@/components/CatalogBrowser";
 import Breadcrumbs from "@/components/Breadcrumbs.astro";
+import { loadCategories } from "@/lib/catalog-live";
+import { subdomainUrl } from "@/lib/subdomains";
+
+const categories = loadCategories();
 ---
 
 <Layout
@@ -21,7 +25,15 @@ import Breadcrumbs from "@/components/Breadcrumbs.astro";
   </div>
   <section class="section section--tight">
     <div class="container">
-      <CatalogBrowser client:load />
+      <div class="city-grid city-grid--compact">
+        {categories.map((cat) => (
+          <a class="city-card city-card--link" href={subdomainUrl(cat.slug)}>
+            <h3>{cat.name}</h3>
+            <p>{cat.count} позиций · {subdomainUrl(cat.slug).replace("https://", "")}</p>
+          </a>
+        ))}
+      </div>
+      <CatalogBrowser client:visible />
     </div>
   </section>
 </Layout>

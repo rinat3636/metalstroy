@@ -895,6 +895,48 @@
   line-height: 1.6;
 }
 
+.site-footer__nav {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 2rem;
+  margin-top: 2.5rem;
+  padding-top: 2rem;
+  border-top: 1px solid var(--color-border);
+}
+
+.site-footer__nav a {
+  font-size: 0.8125rem;
+}
+
+.seo-url-hint {
+  margin-top: 0.75rem;
+  font-size: 0.8125rem;
+  color: var(--color-ink-faint);
+}
+
+.seo-url-hint a {
+  color: var(--color-accent);
+}
+
+.city-card--link {
+  display: block;
+  text-decoration: none;
+  color: inherit;
+  padding: 1rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  transition: border-color 0.15s;
+}
+
+.city-card--link:hover {
+  border-color: var(--color-accent);
+}
+
+.city-grid--compact {
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 0.75rem;
+}
+
 .breadcrumbs {
   display: flex;
   flex-wrap: wrap;
@@ -1228,6 +1270,10 @@ body.menu-open {
   font-size: 0.9375rem;
   color: var(--color-ink-muted);
   line-height: 1.7;
+}
+
+.catalog-section:has(.catalog-tools) .catalog-ssr {
+  display: none;
 }
 
 .page-header {

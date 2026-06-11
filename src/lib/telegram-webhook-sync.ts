@@ -1,4 +1,5 @@
 import { getTelegramBotToken, telegramApi } from "./telegram-api";
+import { getSiteOrigin } from "./subdomains";
 
 function readEnv(name: string): string | undefined {
   return process.env[name]?.trim() || undefined;
@@ -14,7 +15,7 @@ export function resolvePublicSiteUrl(): string | null {
   const railwayDomain = readEnv("RAILWAY_PUBLIC_DOMAIN");
   if (railwayDomain) return `https://${railwayDomain}`;
 
-  return null;
+  return getSiteOrigin();
 }
 
 export async function syncTelegramWebhook(): Promise<boolean> {

@@ -1,10 +1,18 @@
 ---
 import Layout from "@/layouts/Layout.astro";
 import CatalogBrowser from "@/components/CatalogBrowser";
+import ProductCard from "@/components/ProductCard.astro";
 import Breadcrumbs from "@/components/Breadcrumbs.astro";
-import { productImageUrl, getCategoryCoverImage } from "@/lib/data";
+import { productImageUrl } from "@/lib/data";
+import { getCategoryCoverImage } from "@/lib/catalog-live";
 import { getCategoryBySlug, loadProducts } from "@/lib/product-store";
+import { absoluteUrl, canonicalForPage, buildBreadcrumbSchema } from "@/lib/seo";
+import { subdomainUrl } from "@/lib/subdomains";
+import citiesData from "@/data/cities.json";
+import type { City } from "@/lib/types";
 import { withBase } from "@/lib/paths";
+
+const cities = citiesData as City[];
 
 export const prerender = false;
 
@@ -13,16 +21,18 @@ const category = getCategoryBySlug(categorySlug!);
 if (!category) return Astro.redirect(withBase("/catalog/"));
 
 const categoryProducts = loadProducts().filter((p) => p.categorySlug === categorySlug);
+const ssrProducts = categoryProducts.slice(0, 20);
 
-const breadcrumbSchema = {
-  "@context": "https://schema.org",
-  "@type": "BreadcrumbList",
-  itemListElement: [
-    { "@type": "ListItem", position: 1, name: "Главная", item: Astro.site },
-    { "@type": "ListItem", position: 2, name: "Каталог", item: new URL(withBase("/catalog/"), Astro.site).href },
-    { "@type": "ListItem", position: 3, name: category.name },
-  ],
-};
+const canonical = canonicalForPage({
+  pathname: Astro.url.pathname,
+  categorySlug: category.slug,
+});
+
+const breadcrumbSchema = buildBreadcrumbSchema([
+  { name: "Главная", href: absoluteUrl("/") },
+  { name: "Каталог", href: absoluteUrl("/catalog/") },
+  { name: category.name },
+]);
 
 const itemListSchema = {
   "@context": "https://schema.org",
@@ -32,15 +42,16 @@ const itemListSchema = {
   itemListElement: categoryProducts.slice(0, 20).map((p, i) => ({
     "@type": "ListItem",
     position: i + 1,
-    url: new URL(withBase(`/catalog/${p.categorySlug}/${p.slug}/`), Astro.site).href,
+    url: absoluteUrl(`/catalog/${p.categorySlug}/${p.slug}/`),
     name: p.title,
   })),
 };
 ---
 
 <Layout
-  title={`${category.name} — купить в ДНР`}
-  description={category.description}
+  title={`${category.name} — купить в ДНР | ${category.count} позиций`}
+  description={`${category.description} ${category.seoText.slice(0, 120)}`}
+  canonical={canonical}
   schema={[breadcrumbSchema, itemListSchema]}
   ogImage={getCategoryCoverImage(categorySlug!) ? productImageUrl(getCategoryCoverImage(categorySlug!)) : undefined}
 >
@@ -48,8 +59,8 @@ const itemListSchema = {
     <div class="container page-header__split">
       <div>
         <Breadcrumbs items={[
-          { label: "Главная", href: "/" },
-          { label: "Каталог", href: "/catalog/" },
+          { label: "Главная", href: absoluteUrl("/") },
+          { label: "Каталог", href: absoluteUrl("/catalog/") },
           { label: category.name },
         ]} />
         <p class="eyebrow">Категория</p>
@@ -64,10 +75,26 @@ const itemListSchema = {
     </div>
   </div>
   <section class="section section--tight">
-    <div class="container">
-      <CatalogBrowser client:load products={categoryProducts} initialCategory={category.name} />
+    <div class="container catalog-section">
+      <div class="product-grid catalog-ssr">
+        {ssrProducts.map((product) => (
+          <ProductCard product={product} />
+        ))}
+      </div>
+      <CatalogBrowser client:visible products={categoryProducts} initialCategory={category.name} />
       <div class="seo-block">
         <p>{category.seoText}</p>
+      </div>
+      <div class="seo-block">
+        <h2>{category.name} — поставка по городам ДНР</h2>
+        <div class="city-grid city-grid--compact">
+          {cities.map((city) => (
+            <a class="city-card city-card--link" href={subdomainUrl(city.slug, `/${category.slug}/`)}>
+              <h3>{city.name}</h3>
+              <p>{category.name} · {city.name}</p>
+            </a>
+          ))}
+        </div>
       </div>
     </div>
   </section>

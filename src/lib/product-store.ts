@@ -1,5 +1,5 @@
-import { readFileSync, writeFileSync, existsSync } from "node:fs";
-import { join } from "node:path";
+import { readFileSync, writeFileSync, existsSync, mkdirSync, renameSync } from "node:fs";
+import { dirname, join } from "node:path";
 import { filterProducts } from "./search";
 import type { Category, Product } from "./types";
 import { buildProduct, buildProductSlug, nextSku, productToCatalogRaw, type ProductInput } from "./product-utils";
@@ -15,9 +15,14 @@ function readJson<T>(path: string, fallback: T): T {
 }
 
 function writeJson(path: string, data: unknown): void {
-  writeFileSync(path, `${JSON.stringify(data, null, 2)}\n`, "utf-8");
+  mkdirSync(dirname(path), { recursive: true });
+  const content = `${JSON.stringify(data, null, 2)}\n`;
+  const tmp = `${path}.tmp`;
+  writeFileSync(tmp, content, "utf-8");
+  renameSync(tmp, path);
 }
 
+/** Единый источник каталога: сайт, поиск, бот, админка */
 export function loadProducts(): Product[] {
   return readJson<Product[]>(PRODUCTS_PATH, []);
 }
@@ -48,6 +53,7 @@ function recalcCategories(products: Product[]): Category[] {
 }
 
 function syncCatalogRaw(products: Product[]): void {
+  mkdirSync(dirname(CATALOG_RAW_PATH), { recursive: true });
   writeJson(CATALOG_RAW_PATH, products.map(productToCatalogRaw));
 }
 
@@ -93,6 +99,10 @@ export function getCategoryBySlug(slug: string): Category | undefined {
 
 export function getProductBySlugs(categorySlug: string, productSlug: string): Product | undefined {
   return loadProducts().find((p) => p.categorySlug === categorySlug && p.slug === productSlug);
+}
+
+export function getProductsByCategory(categorySlug: string): Product[] {
+  return loadProducts().filter((p) => p.categorySlug === categorySlug);
 }
 
 export function deleteProduct(sku: string): void {

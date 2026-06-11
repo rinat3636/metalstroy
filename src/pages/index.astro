@@ -2,17 +2,24 @@
 import Layout from "@/layouts/Layout.astro";
 import LeadForm from "@/components/LeadForm";
 import ProductCard from "@/components/ProductCard.astro";
-import { products, categories, site, productImageUrl, getCategoryCoverImage, getFeaturedProducts } from "@/lib/data";
+import { site, productImageUrl, cities } from "@/lib/data";
+import { getCategoryCoverImage, getFeaturedProducts, loadCategories, loadProducts } from "@/lib/catalog-live";
+import { absoluteUrl } from "@/lib/seo";
+import { subdomainUrl } from "@/lib/subdomains";
 import { withBase } from "@/lib/paths";
 
+const products = loadProducts();
 const featuredProducts = getFeaturedProducts();
+const categories = loadCategories();
 
 const topCategories = categories.slice(0, 6);
+const homeCanonical = absoluteUrl("/");
 ---
 
 <Layout
   title={`${site.name} — металлопрокат и стройматериалы в ДНР`}
   description="Профсталь-инвест: каталог металлопроката и стройматериалов в ДНР. Трубы, арматура, лист, профнастил, сетки, кровля. Подбор, расчёт и поставка по региону."
+  canonical={homeCanonical}
 >
   <section class="hero">
     <div class="container hero__grid">
@@ -68,7 +75,7 @@ const topCategories = categories.slice(0, 6);
             {topCategories.map((cat) => {
               const cover = getCategoryCoverImage(cat.slug);
               return (
-                <a href={withBase(`/catalog/${cat.slug}/`)}>
+                <a href={subdomainUrl(cat.slug)}>
                   {cover && (
                     <img
                       class="supply-list__thumb"
@@ -111,6 +118,25 @@ const topCategories = categories.slice(0, 6);
     </div>
   </section>
 
+  <section class="section section--tight">
+    <div class="container">
+      <p class="eyebrow">География</p>
+      <h2 class="section-title">Поставка металлопроката по городам ДНР</h2>
+      <p class="section-lead">Подберём позиции под объект, уточним наличие и согласуем доставку или самовывоз.</p>
+      <div class="city-grid city-grid--compact" style="margin-top: 1.25rem;">
+        {cities.map((city) => (
+          <a class="city-card city-card--link" href={subdomainUrl(city.slug)}>
+            <h3>{city.name}</h3>
+            <p>{city.title}</p>
+          </a>
+        ))}
+      </div>
+      <div style="margin-top: 1.25rem;">
+        <a class="btn btn--outline" href={withBase("/cities/")}>Все города поставки</a>
+      </div>
+    </div>
+  </section>
+
   <section class="section section--mobile-compact">
     <div class="container">
       <p class="eyebrow">Как работаем</p>
@@ -122,6 +148,25 @@ const topCategories = categories.slice(0, 6);
         <span><b>02</b> Проверка наличия</span>
         <span><b>03</b> Расчёт партии</span>
         <span><b>04</b> Отгрузка</span>
+      </div>
+    </div>
+  </section>
+
+  <section class="section section--tight">
+    <div class="container">
+      <p class="eyebrow">География</p>
+      <h2 class="section-title">Поставка металлопроката по городам ДНР</h2>
+      <p class="section-lead">Подберём позиции под объект, уточним наличие и согласуем доставку или самовывоз.</p>
+      <div class="city-grid city-grid--compact" style="margin-top: 1.25rem;">
+        {cities.map((city) => (
+          <a class="city-card city-card--link" href={subdomainUrl(city.slug)}>
+            <h3>{city.name}</h3>
+            <p>{city.title}</p>
+          </a>
+        ))}
+      </div>
+      <div style="margin-top: 1.25rem;">
+        <a class="btn btn--outline" href={withBase("/cities/")}>Все города поставки</a>
       </div>
     </div>
   </section>

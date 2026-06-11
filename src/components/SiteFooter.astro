@@ -1,6 +1,14 @@
 ---
 import { site } from "@/lib/data";
 import { withBase } from "@/lib/paths";
+import { buildWebSiteSchema } from "@/lib/seo";
+import { subdomainUrl } from "@/lib/subdomains";
+import { loadCategories } from "@/lib/catalog-live";
+import citiesData from "@/data/cities.json";
+import type { City } from "@/lib/types";
+
+const cities = citiesData as City[];
+const topCategories = loadCategories().slice(0, 6);
 
 const hasRequisites = site.inn || site.kpp || site.ogrn;
 ---
@@ -36,5 +44,27 @@ const hasRequisites = site.inn || site.kpp || site.ogrn;
         </p>
       )}
     </div>
+    <nav class="site-footer__nav" aria-label="Навигация по сайту">
+      <div>
+        <strong>Каталог</strong>
+        {topCategories.map((cat) => (
+          <a href={subdomainUrl(cat.slug)}>{cat.name}</a>
+        ))}
+        <a href={withBase("/catalog/")}>Весь каталог</a>
+      </div>
+      <div>
+        <strong>Города ДНР</strong>
+        {cities.slice(0, 6).map((city) => (
+          <a href={subdomainUrl(city.slug)}>{city.name}</a>
+        ))}
+        <a href={withBase("/cities/")}>Все города</a>
+      </div>
+      <div>
+        <strong>Компания</strong>
+        <a href={withBase("/about/")}>О компании</a>
+        <a href={withBase("/delivery/")}>Доставка</a>
+        <a href={withBase("/contacts/")}>Контакты</a>
+      </div>
+    </nav>
   </div>
 </footer>

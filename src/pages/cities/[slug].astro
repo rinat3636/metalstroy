@@ -2,7 +2,10 @@
 import Layout from "@/layouts/Layout.astro";
 import Breadcrumbs from "@/components/Breadcrumbs.astro";
 import LeadForm from "@/components/LeadForm";
-import { cities, categories, site, getProductBySku, productImageUrl, formatPrice } from "@/lib/data";
+import { cities, site, productImageUrl, formatPrice } from "@/lib/data";
+import { getProductBySku, loadCategories } from "@/lib/catalog-live";
+import { buildBreadcrumbSchema, buildFaqSchema, canonicalForPage, absoluteUrl } from "@/lib/seo";
+import { subdomainUrl } from "@/lib/subdomains";
 import { withBase } from "@/lib/paths";
 
 export function getStaticPaths() {
@@ -12,6 +15,14 @@ export function getStaticPaths() {
 const { slug } = Astro.params;
 const city = cities.find((c) => c.slug === slug);
 if (!city) return Astro.redirect(withBase("/"));
+
+const categories = loadCategories();
+const canonical = canonicalForPage({
+  pathname: Astro.url.pathname,
+  citySlug: city.slug,
+});
+
+const cityHomeUrl = subdomainUrl(city.slug);
 
 const popularProducts = (city.popularSkus ?? [])
   .map((sku) => getProductBySku(sku))
@@ -23,21 +34,19 @@ const faq = [
   { q: "Можно ли получить счёт для организации?", a: "Да, работаем с юридическими лицами: счёт, закрывающие документы, поставка партиями под объект." },
 ];
 
-const faqSchema = {
-  "@context": "https://schema.org",
-  "@type": "FAQPage",
-  mainEntity: faq.map((item) => ({
-    "@type": "Question",
-    name: item.q,
-    acceptedAnswer: { "@type": "Answer", text: item.a },
-  })),
-};
+const faqSchema = buildFaqSchema(faq);
+const breadcrumbSchema = buildBreadcrumbSchema([
+  { name: "Главная", href: absoluteUrl("/") },
+  { name: "Города", href: absoluteUrl("/cities/") },
+  { name: city.name },
+]);
 ---
 
 <Layout
   title={`${city.title} — ${site.name}`}
-  description={`${city.text} Каталог металлопроката, подбор и поставка по региону.`}
-  schema={faqSchema}
+  description={`${city.text} ${city.delivery} Каталог металлопроката и стройматериалов.`}
+  canonical={canonical}
+  schema={[faqSchema, breadcrumbSchema]}
 >
   <div class="page-header">
     <div class="container">
@@ -80,10 +89,10 @@ const faqSchema = {
           </div>
         </>
       )}
-      <p class="eyebrow">Категории</p>
+      <p class="eyebrow">Категории в {city.name}</p>
       <div class="category-grid">
-        {categories.slice(0, 6).map((cat) => (
-          <a href={withBase(`/catalog/${cat.slug}/`)} class="category-card">
+        {categories.map((cat) => (
+          <a href={subdomainUrl(city.slug, `/${cat.slug}/`)} class="category-card">
             <span class="category-card__count">{cat.count} позиций</span>
             <h3>{cat.name}</h3>
             <p>{cat.description}</p>

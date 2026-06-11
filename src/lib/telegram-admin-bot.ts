@@ -349,7 +349,7 @@ export function handleCallback(data: string, chatId: number): BotReply | null {
       });
       resetSession(chatId);
       return {
-        text: [`✅ Добавлен <b>${esc(product.sku)}</b>`, esc(product.title)].join("\n"),
+        text: [`✅ Добавлен <b>${esc(product.sku)}</b>`, esc(product.title), "", "Товар сразу в каталоге и в поиске на сайте."].join("\n"),
         options: { html: true, replyMarkup: productAdminKeyboard(product) },
       };
     } catch (e) {

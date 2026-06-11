@@ -1,0 +1,138 @@
+---
+import Layout from "@/layouts/Layout.astro";
+import Breadcrumbs from "@/components/Breadcrumbs.astro";
+import CatalogBrowser from "@/components/CatalogBrowser";
+import ProductCard from "@/components/ProductCard.astro";
+import LeadForm from "@/components/LeadForm";
+import { cities } from "@/lib/data";
+import { loadCategories, loadProducts } from "@/lib/catalog-live";
+import { productImageUrl } from "@/lib/data";
+import { getCategoryCoverImage } from "@/lib/catalog-live";
+import { withBase } from "@/lib/paths";
+import {
+  absoluteUrl,
+  buildBreadcrumbSchema,
+  buildFaqSchema,
+  canonicalForPage,
+  cityCategoryDescription,
+  cityCategoryFaq,
+  cityCategoryH1,
+  cityCategoryIntro,
+  cityCategoryTitle,
+} from "@/lib/seo";
+import { subdomainUrl } from "@/lib/subdomains";
+
+export const prerender = false;
+
+const { slug, categorySlug } = Astro.params;
+const city = cities.find((c) => c.slug === slug);
+const category = loadCategories().find((c) => c.slug === categorySlug);
+if (!city || !category) return Astro.redirect(withBase("/cities/"));
+
+const categoryProducts = loadProducts().filter((p) => p.categorySlug === categorySlug);
+const ssrProducts = categoryProducts.slice(0, 20);
+
+const canonical = canonicalForPage({
+  pathname: Astro.url.pathname,
+  citySlug: city.slug,
+  categorySlug: category.slug,
+});
+
+const faq = cityCategoryFaq(city, category);
+const introParagraphs = cityCategoryIntro(city, category);
+const cityHomeUrl = subdomainUrl(city.slug);
+const pageUrl = subdomainUrl(city.slug, `/${category.slug}/`);
+
+const breadcrumbs = buildBreadcrumbSchema([
+  { name: "Главная", href: absoluteUrl("/") },
+  { name: "Города", href: absoluteUrl("/cities/") },
+  { name: city.name, href: cityHomeUrl },
+  { name: category.name },
+]);
+
+const itemListSchema = {
+  "@context": "https://schema.org",
+  "@type": "ItemList",
+  name: cityCategoryH1(city, category),
+  numberOfItems: categoryProducts.length,
+  itemListElement: categoryProducts.slice(0, 20).map((p, i) => ({
+    "@type": "ListItem",
+    position: i + 1,
+    url: absoluteUrl(`/catalog/${p.categorySlug}/${p.slug}/`),
+    name: p.title,
+  })),
+};
+
+---
+
+<Layout
+  title={cityCategoryTitle(city, category)}
+  description={cityCategoryDescription(city, category)}
+  canonical={canonical}
+  schema={[breadcrumbs, buildFaqSchema(faq), itemListSchema]}
+  ogImage={getCategoryCoverImage(category.slug) ? productImageUrl(getCategoryCoverImage(category.slug)) : undefined}
+>
+  <div class="page-header">
+    <div class="container page-header__split">
+      <div>
+        <Breadcrumbs items={[
+          { label: "Главная", href: absoluteUrl("/") },
+          { label: "Города", href: absoluteUrl("/cities/") },
+          { label: city.name, href: cityHomeUrl },
+          { label: category.name },
+        ]} />
+        <p class="eyebrow">{city.name} · {category.count} позиций</p>
+        <h1 class="section-title">{cityCategoryH1(city, category)}</h1>
+        <p class="section-lead">{category.description} {city.delivery}</p>
+      </div>
+      {getCategoryCoverImage(category.slug) && (
+        <div class="page-header__visual">
+          <img src={productImageUrl(getCategoryCoverImage(category.slug))} alt={cityCategoryH1(city, category)} width="480" height="300" loading="eager" />
+        </div>
+      )}
+    </div>
+  </div>
+
+  <section class="section section--tight">
+    <div class="container catalog-section">
+      <div class="product-grid catalog-ssr">
+        {ssrProducts.map((product) => (
+          <ProductCard product={product} />
+        ))}
+      </div>
+      <CatalogBrowser client:visible products={categoryProducts} initialCategory={category.name} />
+      <div class="seo-block">
+        <h2>{category.name} для объектов в {city.name}</h2>
+        {introParagraphs.map((paragraph) => (
+          <p>{paragraph}</p>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container">
+      <p class="eyebrow">FAQ</p>
+      <h2 class="section-title">Вопросы — {category.name}, {city.name}</h2>
+      <div class="faq-list" style="margin-top: 1.5rem;">
+        {faq.map((item) => (
+          <article class="faq-item">
+            <h3>{item.q}</h3>
+            <p>{item.a}</p>
+          </article>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <section class="section request-section">
+    <div class="container request-grid">
+      <div>
+        <p class="eyebrow">Заявка</p>
+        <h2 class="section-title" style="color: #fff;">Расчёт — {category.name}, {city.name}</h2>
+        <p class="section-lead">Оставьте контакты — перезвоним с ценой и сроками поставки.</p>
+      </div>
+      <LeadForm client:load defaultCity={city.name} />
+    </div>
+  </section>
+</Layout>
