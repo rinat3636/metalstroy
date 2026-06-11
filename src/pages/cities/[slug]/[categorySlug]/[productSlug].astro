@@ -3,67 +3,66 @@ import Layout from "@/layouts/Layout.astro";
 import Breadcrumbs from "@/components/Breadcrumbs.astro";
 import AddToQuoteButton from "@/components/AddToQuoteButton";
 import LeadForm from "@/components/LeadForm";
+import { cities, formatPrice, loadSite, productImageUrl, stockLabel } from "@/lib/data";
 import { getCategoryBySlug, getProductBySlugs, loadProducts } from "@/lib/product-store";
-import {
-  formatPrice,
-  stockLabel,
-  productImageUrl,
-  loadSite,
-} from "@/lib/data";
 import { withBase } from "@/lib/paths";
 import { absoluteUrl, buildBreadcrumbSchema, buildFaqSchema } from "@/lib/seo";
 import {
-  buildProductSchema,
-  productCanonicalUrl,
-  productDeliveryText,
-  productFaq,
-  productH1,
-  productMetaDescription,
-  productSeoIntro,
-  productTitle,
-} from "@/lib/product-seo";
+  cityProductDescription,
+  cityProductFaq,
+  cityProductH1,
+  cityProductIntro,
+  cityProductTitle,
+  cityProductUrl,
+} from "@/lib/city-product-seo";
+import { buildProductSchema } from "@/lib/product-seo";
+import { productCanonicalUrl } from "@/lib/product-url";
 import { subdomainUrl } from "@/lib/subdomains";
-import { cities } from "@/lib/data";
-import { cityProductUrl } from "@/lib/city-product-seo";
 
 export const prerender = false;
 
-const { categorySlug, productSlug } = Astro.params;
+const { slug, categorySlug, productSlug } = Astro.params;
+const city = cities.find((c) => c.slug === slug);
 const product = getProductBySlugs(categorySlug!, productSlug!);
-if (!product) return Astro.redirect(withBase("/catalog/"));
-
 const category = getCategoryBySlug(categorySlug!);
-if (!category) return Astro.redirect(withBase("/catalog/"));
+
+if (!city || !product || !category || product.categorySlug !== categorySlug) {
+  return Astro.redirect(withBase("/cities/"));
+}
 
 const site = loadSite();
+const canonical = cityProductUrl(city.slug, product);
+const imageAbsolute = new URL(productImageUrl(product.image), Astro.site).href;
+const intro = cityProductIntro(product, city, category);
+const faq = cityProductFaq(product, city, category);
+const productGlobalUrl = productCanonicalUrl(product);
+const categoryCityUrl = subdomainUrl(city.slug, `/${category.slug}/`);
+const cityHomeUrl = subdomainUrl(city.slug);
+
 const related = loadProducts()
-  .filter((p) => p.categorySlug === product.categorySlug && p.sku !== product.sku)
+  .filter((p) => p.categorySlug === categorySlug && p.sku !== product.sku)
   .slice(0, 4);
+
+const otherCities = cities.filter((c) => c.slug !== city.slug);
 
 const stockClass =
   product.stock === "in_stock" ? "badge badge--ok" :
   product.stock === "on_order" ? "badge badge--warn" : "badge badge--no";
 
-const canonical = productCanonicalUrl(product);
-const imageAbsolute = new URL(productImageUrl(product.image), Astro.site).href;
-const categoryUrl = subdomainUrl(category.slug);
-const intro = productSeoIntro(product, category);
-const faq = productFaq(product, category);
-const productSchema = buildProductSchema(product, category, canonical, imageAbsolute, site);
-
+const productSchema = buildProductSchema(product, category, productGlobalUrl, imageAbsolute, site);
 const breadcrumbSchema = buildBreadcrumbSchema([
   { name: "Главная", href: absoluteUrl("/") },
-  { name: "Каталог", href: absoluteUrl("/catalog/") },
-  { name: category.name, href: categoryUrl },
+  { name: "Города", href: absoluteUrl("/cities/") },
+  { name: city.name, href: cityHomeUrl },
+  { name: category.name, href: categoryCityUrl },
   { name: product.title, href: canonical },
 ]);
-
 const faqSchema = buildFaqSchema(faq);
 ---
 
 <Layout
-  title={productTitle(product, category)}
-  description={productMetaDescription(product, category)}
+  title={cityProductTitle(product, city, category)}
+  description={cityProductDescription(product, city, category)}
   canonical={canonical}
   schema={[productSchema, breadcrumbSchema, faqSchema]}
   ogImage={productImageUrl(product.image)}
@@ -72,36 +71,43 @@ const faqSchema = buildFaqSchema(faq);
   <div class="page-header">
     <div class="container">
       <Breadcrumbs items={[
-        { label: "Главная", href: "/" },
-        { label: "Каталог", href: "/catalog/" },
-        { label: category.name, href: categoryUrl },
+        { label: "Главная", href: absoluteUrl("/") },
+        { label: "Города", href: absoluteUrl("/cities/") },
+        { label: city.name, href: cityHomeUrl },
+        { label: category.name, href: categoryCityUrl },
         { label: product.title },
       ]} />
     </div>
   </div>
+
   <section class="section section--tight">
     <div class="container product-detail">
       <div class="product-detail__gallery">
-        <img src={productImageUrl(product.image)} alt={`${product.title} — ${product.sku}`} loading="eager" width="800" height="600" />
+        <img src={productImageUrl(product.image)} alt={`${product.title} — ${city.name}`} loading="eager" width="800" height="600" />
       </div>
       <div>
         <div style="display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 0.75rem;">
           <span class="badge" style="font-family: var(--font-mono);">{product.sku}</span>
           <span class={stockClass}>{stockLabel(product.stock)}</span>
+          <span class="badge">{city.name}</span>
         </div>
         <p class="eyebrow">
-          <a href={categoryUrl}>{product.category}</a>
+          <a href={categoryCityUrl}>{category.name}</a>
           {product.subcategory ? ` / ${product.subcategory}` : ""}
         </p>
-        <h1 class="section-title" style="font-size: 1.75rem;">{productH1(product)}</h1>
+        <h1 class="section-title" style="font-size: 1.75rem;">{cityProductH1(product, city)}</h1>
         <p class="product-detail__price">{formatPrice(product.price)}</p>
         <p style="font-size: 0.8125rem; color: var(--color-ink-faint); margin-bottom: 1.5rem;">
-          Цена ориентировочная, уточняется менеджером при оформлении заявки.
+          Цена ориентировочная для {city.name}. Уточняется менеджером с учётом доставки.
         </p>
         <AddToQuoteButton client:load sku={product.sku} title={product.title} />
         <a class="btn btn--outline" href={`tel:${site.phone.replace(/\s/g, "")}`} style="margin-left: 0.5rem;" data-goal="phone_click">
           Позвонить
         </a>
+        <p style="margin-top: 1rem; font-size: 0.875rem;">
+          <a href={productGlobalUrl}>Общая карточка товара</a> ·
+          <a href={categoryCityUrl}>Вся категория в {city.name}</a>
+        </p>
 
         {product.specs.length > 0 && (
           <>
@@ -120,12 +126,11 @@ const faqSchema = buildFaqSchema(faq);
         )}
 
         <div class="seo-block">
-          <h2 class="section-title" style="font-size: 1.125rem;">Описание</h2>
+          <h2 class="section-title" style="font-size: 1.125rem;">Поставка в {city.name}</h2>
           {intro.map((paragraph) => (
             <p>{paragraph}</p>
           ))}
           <p>{product.description}</p>
-          <p>{productDeliveryText(category)}</p>
         </div>
       </div>
     </div>
@@ -133,12 +138,12 @@ const faqSchema = buildFaqSchema(faq);
 
   <section class="section section--tight">
     <div class="container">
-      <p class="eyebrow">Доставка по ДНР</p>
-      <h2 class="section-title" style="font-size: 1.25rem;">{product.title} — по городам</h2>
-      <ul style="display: flex; flex-wrap: wrap; gap: 0.5rem 1rem; margin-top: 1rem; list-style: none; padding: 0;">
-        {cities.map((city) => (
+      <p class="eyebrow">Другие города</p>
+      <h2 class="section-title" style="font-size: 1.25rem;">{product.title} — доставка по ДНР</h2>
+      <ul class="city-links" style="display: flex; flex-wrap: wrap; gap: 0.5rem 1rem; margin-top: 1rem; list-style: none; padding: 0;">
+        {otherCities.map((c) => (
           <li>
-            <a href={cityProductUrl(city.slug, product)}>{city.name}</a>
+            <a href={cityProductUrl(c.slug, product)}>{c.name}</a>
           </li>
         ))}
       </ul>
@@ -148,7 +153,7 @@ const faqSchema = buildFaqSchema(faq);
   <section class="section section--tight">
     <div class="container">
       <p class="eyebrow">FAQ</p>
-      <h2 class="section-title" style="font-size: 1.375rem;">Вопросы о {product.title}</h2>
+      <h2 class="section-title" style="font-size: 1.375rem;">Вопросы — {product.sku}, {city.name}</h2>
       <div class="faq-list" style="margin-top: 1.5rem;">
         {faq.map((item) => (
           <article class="faq-item">
@@ -163,13 +168,13 @@ const faqSchema = buildFaqSchema(faq);
   {related.length > 0 && (
     <section class="section section--tight">
       <div class="container">
-        <p class="eyebrow">Категория</p>
-        <h2 class="section-title" style="font-size: 1.375rem;">Похожие позиции — {category.name}</h2>
+        <p class="eyebrow">{city.name}</p>
+        <h2 class="section-title" style="font-size: 1.375rem;">Ещё из «{category.name}»</h2>
         <div class="product-grid" style="margin-top: 1rem;">
           {related.map((item) => (
-            <a href={productCanonicalUrl(item)} class="related-card">
+            <a href={cityProductUrl(city.slug, item)} class="related-card">
               <div class="related-card__media">
-                <img src={productImageUrl(item.image)} alt={`${item.title} — ${item.sku}`} loading="lazy" width="200" height="150" />
+                <img src={productImageUrl(item.image)} alt={`${item.title} — ${city.name}`} loading="lazy" width="200" height="150" />
               </div>
               <div class="related-card__body">
                 <span class="badge product-card__sku">{item.sku}</span>
@@ -187,10 +192,10 @@ const faqSchema = buildFaqSchema(faq);
     <div class="container request-grid">
       <div>
         <p class="eyebrow">Заявка</p>
-        <h2 class="section-title" style="color: #fff;">Заказать {product.sku}</h2>
-        <p class="section-lead">Укажите контакты — перезвоним с ценой, наличием и сроками доставки по ДНР.</p>
+        <h2 class="section-title" style="color: #fff;">Заказать {product.sku} — {city.name}</h2>
+        <p class="section-lead">Перезвоним с ценой, наличием и сроками доставки в {city.name}.</p>
       </div>
-      <LeadForm client:load />
+      <LeadForm client:load defaultCity={city.name} />
     </div>
   </section>
 </Layout>

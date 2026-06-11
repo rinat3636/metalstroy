@@ -20,6 +20,8 @@ import {
   cityCategoryIntro,
   cityCategoryTitle,
 } from "@/lib/seo";
+import { productCanonicalUrl } from "@/lib/product-seo";
+import { cityProductUrl } from "@/lib/city-product-seo";
 import { subdomainUrl } from "@/lib/subdomains";
 
 export const prerender = false;
@@ -58,7 +60,7 @@ const itemListSchema = {
   itemListElement: categoryProducts.slice(0, 20).map((p, i) => ({
     "@type": "ListItem",
     position: i + 1,
-    url: absoluteUrl(`/catalog/${p.categorySlug}/${p.slug}/`),
+    url: cityProductUrl(city.slug, p),
     name: p.title,
   })),
 };
@@ -97,7 +99,7 @@ const itemListSchema = {
     <div class="container catalog-section">
       <div class="product-grid catalog-ssr">
         {ssrProducts.map((product) => (
-          <ProductCard product={product} />
+          <ProductCard product={product} citySlug={city.slug} />
         ))}
       </div>
       <CatalogBrowser client:visible products={categoryProducts} initialCategory={category.name} />

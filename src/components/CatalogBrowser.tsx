@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import SearchCombobox from "@/components/SearchCombobox";
 import { filterProducts } from "@/lib/search";
 import { withBase } from "@/lib/paths";
+import { productCanonicalUrl } from "@/lib/product-url";
 import type { Product } from "@/lib/types";
 
 interface Props {
@@ -168,7 +169,7 @@ export default function CatalogBrowser({ products: initialProducts = [], initial
       <div className="product-grid">
         {shown.map((product) => (
           <article className="product-card" key={product.sku}>
-            <a href={withBase(`/catalog/${product.categorySlug}/${product.slug}/`)} className="product-card__media">
+            <a href={productCanonicalUrl(product)} className="product-card__media">
               <img src={imageUrl(product.image)} alt={product.title} loading="lazy" />
             </a>
             <div className="product-card__body">
@@ -181,7 +182,7 @@ export default function CatalogBrowser({ products: initialProducts = [], initial
                 {product.subcategory ? ` / ${product.subcategory}` : ""}
               </p>
               <h3>
-                <a href={withBase(`/catalog/${product.categorySlug}/${product.slug}/`)}>{product.title}</a>
+                <a href={productCanonicalUrl(product)}>{product.title}</a>
               </h3>
               <p className="product-card__specs">{product.specsRaw || "Характеристики уточняются"}</p>
             </div>

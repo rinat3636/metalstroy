@@ -7,6 +7,7 @@ import { productImageUrl } from "@/lib/data";
 import { getCategoryCoverImage } from "@/lib/catalog-live";
 import { getCategoryBySlug, loadProducts } from "@/lib/product-store";
 import { absoluteUrl, canonicalForPage, buildBreadcrumbSchema } from "@/lib/seo";
+import { productCanonicalUrl } from "@/lib/product-seo";
 import { subdomainUrl } from "@/lib/subdomains";
 import citiesData from "@/data/cities.json";
 import type { City } from "@/lib/types";
@@ -42,7 +43,7 @@ const itemListSchema = {
   itemListElement: categoryProducts.slice(0, 20).map((p, i) => ({
     "@type": "ListItem",
     position: i + 1,
-    url: absoluteUrl(`/catalog/${p.categorySlug}/${p.slug}/`),
+    url: productCanonicalUrl(p),
     name: p.title,
   })),
 };

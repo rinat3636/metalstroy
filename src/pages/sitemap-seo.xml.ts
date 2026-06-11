@@ -1,8 +1,9 @@
 import type { APIRoute } from "astro";
 import { statSync } from "node:fs";
 import { join } from "node:path";
-import { absoluteUrl, listAllSitemapUrls, type SitemapEntry } from "@/lib/seo";
+import { absoluteUrl, listAllSitemapUrls, listCityProductSitemapUrls, type SitemapEntry } from "@/lib/seo";
 import { loadProducts } from "@/lib/product-store";
+import { productCanonicalUrl } from "@/lib/product-seo";
 
 export const prerender = false;
 
@@ -27,12 +28,12 @@ function renderUrl(entry: SitemapEntry): string {
 /** Полная SEO-карта: канонические URL, поддомены, города×категории, товары */
 export const GET: APIRoute = () => {
   const productLastmod = catalogLastmod();
-  const entries: SitemapEntry[] = [...listAllSitemapUrls()];
+  const entries: SitemapEntry[] = [...listAllSitemapUrls(), ...listCityProductSitemapUrls()];
 
   for (const product of loadProducts()) {
     entries.push({
-      loc: absoluteUrl(`/catalog/${product.categorySlug}/${product.slug}/`),
-      priority: "0.75",
+      loc: productCanonicalUrl(product),
+      priority: "0.8",
       changefreq: "weekly",
       lastmod: productLastmod,
     });

@@ -1,20 +1,19 @@
 import type { APIRoute } from "astro";
-import { getSiteOrigin } from "@/lib/subdomains";
 import { loadProducts } from "@/lib/product-store";
+import { productCanonicalUrl } from "@/lib/product-seo";
 
 export const prerender = false;
 
 /** Карта товаров для Яндекс/Google — обновляется при добавлении через бота или админку */
 export const GET: APIRoute = () => {
-  const base = getSiteOrigin();
   const products = loadProducts();
 
   const urls = products
     .map(
       (p) => `  <url>
-    <loc>${base}/catalog/${p.categorySlug}/${p.slug}/</loc>
+    <loc>${productCanonicalUrl(p)}</loc>
     <changefreq>weekly</changefreq>
-    <priority>0.7</priority>
+    <priority>0.8</priority>
   </url>`,
     )
     .join("\n");

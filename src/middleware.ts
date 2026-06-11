@@ -1,6 +1,6 @@
 import { defineMiddleware } from "astro:middleware";
 import { ensureTelegramBotRunning } from "@/lib/telegram-server";
-import { loadCategories } from "@/lib/product-store";
+import { loadCategories, getProductBySlugs } from "@/lib/product-store";
 import citiesData from "@/data/cities.json";
 import {
   getPrimaryDomain,
@@ -40,10 +40,24 @@ export const onRequest = defineMiddleware(async (context, next) => {
       }
     }
 
-    if (sub.kind === "city" && path.startsWith("/")) {
-      const segment = path.slice(1).split("/")[0];
-      if (segment && loadCategories().some((c) => c.slug === segment)) {
-        return context.rewrite(new URL(`/cities/${sub.slug}/${segment}/`, context.url));
+    if (sub.kind === "city" && path !== "/" && path !== "") {
+      const segments = path.slice(1).split("/").filter(Boolean);
+      const catSlug = segments[0];
+      const productSlug = segments[1];
+
+      if (catSlug && productSlug && getProductBySlugs(catSlug, productSlug)) {
+        return context.rewrite(new URL(`/cities/${sub.slug}/${catSlug}/${productSlug}/`, context.url));
+      }
+
+      if (catSlug && segments.length === 1 && loadCategories().some((c) => c.slug === catSlug)) {
+        return context.rewrite(new URL(`/cities/${sub.slug}/${catSlug}/`, context.url));
+      }
+    }
+
+    if (sub.kind === "category" && path !== "/" && path !== "") {
+      const productSlug = path.slice(1).split("/").filter(Boolean)[0];
+      if (productSlug && getProductBySlugs(sub.slug, productSlug)) {
+        return context.rewrite(new URL(`/catalog/${sub.slug}/${productSlug}/`, context.url));
       }
     }
 
@@ -67,9 +81,25 @@ export const onRequest = defineMiddleware(async (context, next) => {
     return redirect301(subdomainUrl(cityCatMatch[1], `/${cityCatMatch[2]}/`));
   }
 
+  const cityProductMatch = normalized.match(/^\/cities\/([^/]+)\/([^/]+)\/([^/]+)\/$/);
+  if (
+    cityProductMatch &&
+    cities.some((c) => c.slug === cityProductMatch[1]) &&
+    getProductBySlugs(cityProductMatch[2], cityProductMatch[3])
+  ) {
+    return redirect301(
+      subdomainUrl(cityProductMatch[1], `/${cityProductMatch[2]}/${cityProductMatch[3]}/`),
+    );
+  }
+
   const catMatch = normalized.match(/^\/catalog\/([^/]+)\/$/);
   if (catMatch && loadCategories().some((c) => c.slug === catMatch[1])) {
     return redirect301(subdomainUrl(catMatch[1]));
+  }
+
+  const productMatch = normalized.match(/^\/catalog\/([^/]+)\/([^/]+)\/$/);
+  if (productMatch && getProductBySlugs(productMatch[1], productMatch[2])) {
+    return redirect301(subdomainUrl(productMatch[1], `/${productMatch[2]}/`));
   }
 
   return next();

@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useId, useRef, useState } from "react";
 import type { SearchHit } from "@/lib/search";
 import { withBase } from "@/lib/paths";
+import { productCanonicalUrl } from "@/lib/product-url";
 
 type SearchMode = "navigate" | "filter";
 
@@ -26,7 +27,7 @@ function imageUrl(image?: string): string {
 }
 
 function productUrl(hit: SearchHit): string {
-  return withBase(`/catalog/${hit.categorySlug}/${hit.slug}/`);
+  return productCanonicalUrl(hit);
 }
 
 function catalogUrl(query: string): string {

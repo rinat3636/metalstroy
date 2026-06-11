@@ -5,6 +5,7 @@ import LeadForm from "@/components/LeadForm";
 import { cities, site, productImageUrl, formatPrice } from "@/lib/data";
 import { getProductBySku, loadCategories } from "@/lib/catalog-live";
 import { buildBreadcrumbSchema, buildFaqSchema, canonicalForPage, absoluteUrl } from "@/lib/seo";
+import { cityProductUrl } from "@/lib/city-product-seo";
 import { subdomainUrl } from "@/lib/subdomains";
 import { withBase } from "@/lib/paths";
 
@@ -76,9 +77,9 @@ const breadcrumbSchema = buildBreadcrumbSchema([
           <p class="eyebrow" style="margin-top: 1.5rem;">Ходовые позиции</p>
           <div class="product-grid" style="margin: 1rem 0 1.5rem;">
             {popularProducts.map((product) => product && (
-              <a href={withBase(`/catalog/${product.categorySlug}/${product.slug}/`)} class="related-card">
+              <a href={cityProductUrl(city.slug, product)} class="related-card">
                 <div class="related-card__media">
-                  <img src={productImageUrl(product.image)} alt={product.title} loading="lazy" width="200" height="150" />
+                  <img src={productImageUrl(product.image)} alt={`${product.title} — ${product.sku}`} loading="lazy" width="200" height="150" />
                 </div>
                 <div class="related-card__body">
                   <h3>{product.title}</h3>

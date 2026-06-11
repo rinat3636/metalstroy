@@ -11,6 +11,11 @@ interface Props {
 }
 
 const { items } = Astro.props;
+
+function hrefFor(href: string): string {
+  if (href.startsWith("http://") || href.startsWith("https://")) return href;
+  return withBase(href);
+}
 ---
 
 <nav class="breadcrumbs" aria-label="Хлебные крошки">
@@ -18,7 +23,7 @@ const { items } = Astro.props;
     <>
       {i > 0 && <span aria-hidden="true">/</span>}
       {item.href ? (
-        <a href={withBase(item.href)}>{item.label}</a>
+        <a href={hrefFor(item.href)}>{item.label}</a>
       ) : (
         <span>{item.label}</span>
       )}

@@ -1,6 +1,7 @@
 import citiesData from "@/data/cities.json";
 import type { Category, City } from "./types";
-import { loadCategories } from "./product-store";
+import { loadCategories, loadProducts } from "./product-store";
+import { cityProductUrl, listCityProductPairs } from "./city-product-seo";
 import { getPrimaryDomain, getSiteOrigin, subdomainUrl } from "./subdomains";
 import { withBase } from "./paths";
 
@@ -27,8 +28,13 @@ export function canonicalForPage(options: {
   subdomain?: { kind: "city" | "category"; slug: string } | null;
   citySlug?: string;
   categorySlug?: string;
+  productSlug?: string;
 }): string {
-  const { pathname, subdomain, citySlug, categorySlug } = options;
+  const { pathname, subdomain, citySlug, categorySlug, productSlug } = options;
+
+  if (productSlug && categorySlug) {
+    return subdomainUrl(categorySlug, `/${productSlug}/`);
+  }
 
   if (subdomain?.kind === "city") {
     if (categorySlug) {
@@ -130,6 +136,9 @@ export function listStaticSeoPaths(): string[] {
   for (const { city, category } of listCityCategoryPairs()) {
     paths.push(`/cities/${city.slug}/${category.slug}/`);
   }
+  for (const { city, product } of listCityProductPairs(cities, loadProducts())) {
+    paths.push(`/cities/${city.slug}/${product.categorySlug}/${product.slug}/`);
+  }
   return paths;
 }
 
@@ -172,6 +181,16 @@ export function listAllSitemapUrls(): SitemapEntry[] {
   }
 
   return entries;
+}
+
+/** Город × товар — landing для локального SEO (1950 URL при 10 городах и 195 товарах) */
+export function listCityProductSitemapUrls(): SitemapEntry[] {
+  const products = loadProducts();
+  return listCityProductPairs(cities, products).map(({ city, product }) => ({
+    loc: cityProductUrl(city.slug, product),
+    priority: "0.78",
+    changefreq: "weekly",
+  }));
 }
 
 export { cities, getCategories as categories, getPrimaryDomain, getSiteOrigin };

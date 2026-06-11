@@ -8,7 +8,8 @@
 2. Подтвердить права (meta-тег или DNS)
 3. Загрузить sitemap: `https://ps-invest.ru/sitemap-seo.xml`
 4. Настроить регион: **Донецк / ДНР**
-5. Проверить индексацию поддоменов (donetsk.ps-invest.ru и др.) — они в той же sitemap
+5. Проверить индексацию поддоменов (donetsk.ps-invest.ru и др.) — они в sitemap-seo.xml
+6. Дополнительно: `sitemap-city-products.xml` — 1950 landing «город × товар»
 
 ## 2. Google Search Console
 

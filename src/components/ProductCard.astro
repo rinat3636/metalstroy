@@ -1,13 +1,15 @@
 ---
 import type { Product } from "@/lib/types";
 import { formatPrice, stockLabel, productImageUrl } from "@/lib/data";
-import { withBase } from "@/lib/paths";
+import { productCanonicalUrl } from "@/lib/product-url";
+import { cityProductUrl } from "@/lib/city-product-seo";
 
 interface Props {
   product: Product;
+  citySlug?: string;
 }
 
-const { product } = Astro.props;
+const { product, citySlug } = Astro.props;
 
 const stockClass =
   product.stock === "in_stock"
@@ -16,12 +18,12 @@ const stockClass =
       ? "badge badge--warn"
       : "badge badge--no";
 
-const productUrl = withBase(`/catalog/${product.categorySlug}/${product.slug}/`);
+const productUrl = citySlug ? cityProductUrl(citySlug, product) : productCanonicalUrl(product);
 ---
 
 <article class="product-card">
   <a href={productUrl} class="product-card__media">
-    <img src={productImageUrl(product.image)} alt={product.title} loading="lazy" width="320" height="200" />
+    <img src={productImageUrl(product.image)} alt={`${product.title} — ${product.sku}`} loading="lazy" width="320" height="200" />
   </a>
   <div class="product-card__body">
     <div class="product-card__meta">
