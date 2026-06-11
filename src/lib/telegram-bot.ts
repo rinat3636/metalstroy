@@ -15,7 +15,7 @@ import {
   handleSessionText,
   type BotReply,
 } from "./telegram-admin-bot";
-import { resetSession } from "./telegram-admin-session";
+import { getSession, resetSession } from "./telegram-admin-session";
 import { BTN_HELP, MENU_BUTTONS, mainMenuKeyboard } from "./telegram-keyboard";
 
 export interface TelegramChat {
@@ -50,7 +50,18 @@ function withMenu(options?: TelegramSendOptions): TelegramSendOptions {
 async function reply(chatId: number, payload: BotReply | string): Promise<void> {
   const text = typeof payload === "string" ? payload : payload.text;
   const options = typeof payload === "string" ? undefined : payload.options;
-  await sendTelegramToChat(chatId, text, withMenu(options));
+
+  try {
+    await sendTelegramToChat(chatId, text, withMenu(options));
+  } catch (error) {
+    console.error(`[telegram] Ошибка отправки в ${chatId}:`, error instanceof Error ? error.message : error);
+    try {
+      await sendTelegramToChat(chatId, text.replace(/<[^>]+>/g, ""));
+    } catch (retryError) {
+      console.error(`[telegram] Повтор без HTML не удался:`, retryError instanceof Error ? retryError.message : retryError);
+      throw retryError;
+    }
+  }
 }
 
 function isStartCommand(text: string): boolean {
@@ -133,7 +144,14 @@ export async function handleTelegramMessage(message: TelegramUpdateMessage): Pro
   }
 
   if (!MENU_BUTTONS.has(text) && text.length >= 2) {
-    resetSession(chat.id);
+    const session = getSession(chat.id);
+    if (session.step !== "idle") {
+      await reply(
+        chat.id,
+        "Сейчас ждём другой ввод. Используйте кнопки в чате или нажмите /start для сброса.",
+      );
+      return;
+    }
     await reply(chat.id, buildSearchReply(text));
     return;
   }

@@ -10,7 +10,7 @@ import {
 import { rankProducts } from "./search";
 import type { Product, StockStatus } from "./types";
 import { stockToLabel } from "./product-utils";
-import { getSession, resetSession, setSession, type AddDraft } from "./telegram-admin-session";
+import { resetSession, getSession, setSession, type AddDraft, type AdminSession } from "./telegram-admin-session";
 import {
   BTN_ADD,
   BTN_CATALOG,
@@ -28,7 +28,21 @@ import {
   handleSettingsMenuButton,
   handleSettingsSessionText,
 } from "./telegram-settings-admin";
+import { parseCategoryPageCallback, parseProductCallback } from "./telegram-callback-routes";
 export type { BotReply } from "./telegram-settings-admin";
+
+function needsInlineButtonSession(session: AdminSession): boolean {
+  return session.step === "add_category" || session.step === "add_stock";
+}
+
+function sessionPrompt(session: AdminSession): BotReply | null {
+  if (needsInlineButtonSession(session)) {
+    return {
+      text: "Выберите кнопку в сообщении выше или нажмите «Отмена».",
+    };
+  }
+  return null;
+}
 
 function esc(text: string): string {
   return text
@@ -188,6 +202,9 @@ export function handleSessionText(chatId: number, text: string): BotReply | null
   const settingsReply = handleSettingsSessionText(chatId, text);
   if (settingsReply) return settingsReply;
 
+  const buttonPrompt = sessionPrompt(session);
+  if (buttonPrompt) return buttonPrompt;
+
   if (session.step === "search") {
     resetSession(chatId);
     return buildSearchReply(text);
@@ -274,14 +291,15 @@ export function handleCallback(data: string, chatId: number): BotReply | null {
     return { text: "Отменено." };
   }
 
-  if (data.startsWith("c:")) {
-    const [, slug, pageRaw] = data.split(":");
-    return buildCategoryReply(slug, Number(pageRaw) || 0);
+  const categoryPage = parseCategoryPageCallback(data);
+  if (categoryPage) {
+    return buildCategoryReply(categoryPage.slug, categoryPage.page);
   }
 
-  if (data.startsWith("p:")) {
+  const productSku = parseProductCallback(data);
+  if (productSku) {
     resetSession(chatId);
-    return buildProductReply(data.slice(2));
+    return buildProductReply(productSku);
   }
 
   if (data.startsWith("del:")) {

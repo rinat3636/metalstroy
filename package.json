@@ -10,6 +10,7 @@
     "migrate": "tsx scripts/migrate-catalog.ts",
     "telegram:setup": "tsx scripts/telegram-setup.ts",
     "telegram:check": "tsx scripts/telegram-check.ts",
+    "telegram:audit": "tsx scripts/telegram-audit.ts",
     "telegram:test": "tsx scripts/telegram-test.ts",
     "telegram:poll": "tsx scripts/telegram-poll.ts",
     "telegram:webhook:off": "tsx scripts/telegram-webhook-off.ts",

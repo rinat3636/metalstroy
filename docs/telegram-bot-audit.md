@@ -21,6 +21,8 @@ flowchart LR
 | Webhook | `api/telegram/webhook.ts` | POST от Telegram |
 | Обработка | `telegram-bot.ts` | /start, меню, поиск |
 | Админка каталога | `telegram-admin-bot.ts` | CRUD товаров |
+| Категории и контакты | `telegram-settings-admin.ts` | категории, телефон, реквизиты |
+| Callback routing | `telegram-callback-routes.ts` | разбор `c:` без коллизий с `ca:` |
 | Админы | `telegram-admins.json` | chat_id получателей заявок |
 | API Telegram | `telegram-api.ts` | undici + опциональный прокси |
 
@@ -68,6 +70,35 @@ flowchart LR
 
 **Решение:** VPN + `TELEGRAM_PROXY=socks5://127.0.0.1:1080` или тестировать бота на Railway (там API доступен).
 
+### 8. Коллизия callback `c:` и `ca:` / `cen:`
+
+**Было:** `data.startsWith("c:")` ловил `ca:slug`, `cen:slug` — открывался неверный экран каталога.
+
+**Исправлено:** строгий парсер `^c:([^:]+):(\d+)$` в `telegram-callback-routes.ts`.
+
+### 9. Текст во время выбора категории/наличия попадал в поиск
+
+**Было:** при шаге «Новый товар» любой текст искался в каталоге.
+
+**Исправлено:** guard сессии — только inline-кнопки или «Отмена»; свободный текст при активной сессии не ищет.
+
+### 10. Ошибки HTML в ответах бота
+
+**Исправлено:** при ошибке `parse_mode: HTML` бот повторяет отправку без тегов.
+
+## Полный чеклист функций бота
+
+| Кнопка / действие | Ожидание |
+|-------------------|----------|
+| `/start` | Приветствие + клавиатура, chat_id в admins |
+| 📋 Каталог | Список категорий → товары → карточка |
+| 🔍 Найти товар | Поиск по артикулу/названию |
+| ➕ Новый товар | Название → категория → цена → наличие |
+| 📁 Категории | Список → редактирование name/desc/SEO, новая категория |
+| 🏢 Контакты | Телефон, email, адрес, график, ИНН/КПП/ОГРН |
+| Inline callbacks | Редактирование без дублирования сообщений |
+| Заявки с сайта | Всем chat_id из `telegram-admins.json` |
+
 ## Чеклист «бот не отвечает на /start»
 
 1. **Railway Variables:** `TELEGRAM_BOT_TOKEN` задан (без пробелов)?
@@ -81,7 +112,8 @@ flowchart LR
 ## Команды
 
 ```powershell
-npm run telegram:check      # диагностика с ПК
+npm run telegram:check      # диагностика с ПК (сеть + webhook)
+npm run telegram:audit      # локальный аудит логики (без API)
 npm run telegram:poll         # локальный poll (нужен VPN в ДНР)
 npm run telegram:webhook:off    # снять webhook
 npm run telegram:test         # тестовое сообщение админам
@@ -106,20 +138,26 @@ TELEGRAM_WEBHOOK_SECRET=    # только для webhook mode
 TELEGRAM_AUTO_START=0       # отключить автостарт
 ```
 
-## Volumes (чтобы админы не сбрасывались)
+## Volumes (Railway)
 
-- `/app/data` → `telegram-admins.json`
+- `/app/data` → `telegram-admins.json`, `site-settings.json`, `catalog.json`
+- `/app/src/data` → `products.json`, `categories.json`
+
+Проверка: `GET /api/telegram/status` → `dataWritable: true`, `catalog.products` > 0
 
 ## Поведение /start (ожидаемое)
 
 1. Пользователь пишет `/start`
 2. Chat ID сохраняется в `data/telegram-admins.json`
-3. Бот отвечает «Админка подключена» + клавиатура (Каталог, Найти, Новый товар, Помощь)
+3. Бот отвечает «Админка подключена» + клавиатура (Каталог, Найти, Новый товар, Категории, Контакты, Помощь)
 4. Заявки с сайта уходят всем chat_id из списка
 
 ## Что проверить после деплоя
 
 1. Логи: `[telegram] Старт (mode=poll, token=ok)`
 2. Логи: `[telegram] Long polling — @proffinvest23_bot`
-3. `/api/telegram/status` → `"hint": "ok"`
-4. Написать боту `/start` — ответ в течение 1–2 сек
+3. `/api/telegram/status` → `"hint": "ok"`, `dataWritable: true`
+4. `npm run telegram:audit` локально — 0 ошибок
+5. Написать боту `/start` — ответ в течение 1–2 сек
+6. 📁 Категории → изменить описание → проверить на сайте
+7. 🏢 Контакты → изменить телефон → проверить в шапке сайта
