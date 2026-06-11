@@ -4,7 +4,7 @@
  */
 
 import { applyEnvFile } from "./load-env";
-import { handleTelegramMessage } from "../src/lib/telegram-bot";
+import { handleTelegramUpdate } from "../src/lib/telegram-bot";
 import { loadTelegramAdmins } from "../src/lib/telegram-admins";
 import { getTelegramBotToken, getTelegramProxy, telegramApi } from "../src/lib/telegram-api";
 
@@ -17,11 +17,6 @@ if (!token) {
 }
 
 const POLL_TIMEOUT_SEC = 50;
-
-async function sendMessage(chatId: number, text: string): Promise<void> {
-  const data = await telegramApi("sendMessage", { chat_id: chatId, text });
-  if (!data.ok) throw new Error(data.description ?? "sendMessage failed");
-}
 
 async function preparePolling(): Promise<void> {
   while (true) {
@@ -60,13 +55,10 @@ async function pollLoop(): Promise<never> {
   while (true) {
     try {
       const data = await telegramApi<
-        Array<{
-          update_id: number;
-          message?: { text?: string; chat: { id: number; username?: string; first_name?: string } };
-        }>
+        Array<{ update_id: number } & Parameters<typeof handleTelegramUpdate>[0]>
       >(
         "getUpdates",
-        { offset, timeout: POLL_TIMEOUT_SEC, allowed_updates: ["message"] },
+        { offset, timeout: POLL_TIMEOUT_SEC, allowed_updates: ["message", "callback_query"] },
         (POLL_TIMEOUT_SEC + 20) * 1000,
       );
 
@@ -78,14 +70,19 @@ async function pollLoop(): Promise<never> {
 
       for (const update of data.result ?? []) {
         offset = update.update_id + 1;
-        const message = update.message;
-        if (!message) continue;
-
         try {
-          await handleTelegramMessage(message, sendMessage);
-          console.log(`Ответ → ${message.chat.id} (@${message.chat.username ?? "—"}): ${message.text ?? ""}`);
+          await handleTelegramUpdate(update);
+          const text =
+            update.message?.text ??
+            update.callback_query?.data ??
+            "";
+          const chatId =
+            update.message?.chat.id ?? update.callback_query?.message?.chat.id;
+          console.log(`Ответ → ${chatId ?? "—"}: ${text}`);
         } catch (error) {
-          console.error(`Ошибка для ${message.chat.id}:`, error);
+          const chatId =
+            update.message?.chat.id ?? update.callback_query?.message?.chat.id;
+          console.error(`Ошибка для ${chatId ?? "?"}:`, error);
         }
       }
     } catch (error) {

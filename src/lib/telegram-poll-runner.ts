@@ -1,5 +1,4 @@
-import { handleTelegramMessage } from "./telegram-bot";
-import { sendTelegramToChat } from "./telegram";
+import { handleTelegramUpdate } from "./telegram-bot";
 import { getTelegramBotToken, telegramApi } from "./telegram-api";
 
 const POLL_TIMEOUT_SEC = 50;
@@ -29,14 +28,13 @@ async function pollLoop(): Promise<void> {
 
   while (running) {
     try {
-      const data = await telegramApi<
-        Array<{
-          update_id: number;
-          message?: { text?: string; chat: { id: number; username?: string; first_name?: string } };
-        }>
-      >(
+      const data = await telegramApi<Array<{ update_id: number } & Parameters<typeof handleTelegramUpdate>[0]>>(
         "getUpdates",
-        { offset, timeout: POLL_TIMEOUT_SEC, allowed_updates: ["message"] },
+        {
+          offset,
+          timeout: POLL_TIMEOUT_SEC,
+          allowed_updates: ["message", "callback_query"],
+        },
         (POLL_TIMEOUT_SEC + 20) * 1000,
       );
 
@@ -48,13 +46,11 @@ async function pollLoop(): Promise<void> {
 
       for (const update of data.result ?? []) {
         offset = update.update_id + 1;
-        const message = update.message;
-        if (!message) continue;
-
         try {
-          await handleTelegramMessage(message, (chatId, text) => sendTelegramToChat(chatId, text));
+          await handleTelegramUpdate(update);
         } catch (error) {
-          console.error(`[telegram] Ошибка для ${message.chat.id}:`, error);
+          const chatId = update.message?.chat.id ?? update.callback_query?.message?.chat.id;
+          console.error(`[telegram] Ошибка для ${chatId ?? "?"}:`, error);
         }
       }
     } catch (error) {

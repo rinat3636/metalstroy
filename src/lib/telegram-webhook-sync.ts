@@ -31,7 +31,7 @@ export async function syncTelegramWebhook(): Promise<boolean> {
 
   const result = await telegramApi("setWebhook", {
     url: webhookUrl,
-    allowed_updates: ["message"],
+    allowed_updates: ["message", "callback_query"],
     ...(secret ? { secret_token: secret } : {}),
   });
 

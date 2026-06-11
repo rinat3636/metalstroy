@@ -2,12 +2,55 @@ import {
   BOT_ADMIN_CONNECTED_TEXT,
   BOT_ALREADY_CONNECTED_TEXT,
   BOT_HELP_TEXT,
+  answerTelegramCallback,
+  editTelegramMessage,
+  sendTelegramToChat,
+  type TelegramSendOptions,
 } from "./telegram";
 import { addTelegramAdmin } from "./telegram-admins";
+import {
+  buildSearchReply,
+  handleCallback,
+  handleMenuButton,
+  handleSessionText,
+  type BotReply,
+} from "./telegram-admin-bot";
+import { resetSession } from "./telegram-admin-session";
+import { BTN_HELP, MENU_BUTTONS, mainMenuKeyboard } from "./telegram-keyboard";
+
+export interface TelegramChat {
+  id: number;
+  username?: string;
+  first_name?: string;
+}
 
 export interface TelegramUpdateMessage {
-  chat: { id: number; username?: string; first_name?: string };
+  chat: TelegramChat;
   text?: string;
+}
+
+export interface TelegramCallbackQuery {
+  id: string;
+  data?: string;
+  message?: { chat: TelegramChat; message_id: number };
+}
+
+export interface TelegramUpdate {
+  message?: TelegramUpdateMessage;
+  callback_query?: TelegramCallbackQuery;
+}
+
+function withMenu(options?: TelegramSendOptions): TelegramSendOptions {
+  return {
+    ...options,
+    replyMarkup: options?.replyMarkup ?? mainMenuKeyboard(),
+  };
+}
+
+async function reply(chatId: number, payload: BotReply | string): Promise<void> {
+  const text = typeof payload === "string" ? payload : payload.text;
+  const options = typeof payload === "string" ? undefined : payload.options;
+  await sendTelegramToChat(chatId, text, withMenu(options));
 }
 
 function isStartCommand(text: string): boolean {
@@ -15,33 +58,84 @@ function isStartCommand(text: string): boolean {
   return lower === "/start" || lower === "start" || lower.startsWith("/start ");
 }
 
-/** Открытый доступ: любой, кто пишет боту, становится админом уведомлений. */
-export async function handleTelegramMessage(
-  message: TelegramUpdateMessage,
-  send: (chatId: number, text: string) => Promise<void>,
-): Promise<void> {
-  const chat = message.chat;
-  const text = message.text?.trim() ?? "";
-
-  if (isStartCommand(text) || text) {
-    const isNew = addTelegramAdmin(chat);
-    if (isNew) {
-      await send(chat.id, BOT_ADMIN_CONNECTED_TEXT);
-      return;
-    }
-    if (isStartCommand(text)) {
-      await send(chat.id, BOT_ALREADY_CONNECTED_TEXT);
-      return;
-    }
+export async function handleTelegramUpdate(update: TelegramUpdate): Promise<void> {
+  if (update.callback_query) {
+    await handleCallbackQuery(update.callback_query);
+    return;
   }
+  const message = update.message;
+  if (message?.chat?.id) await handleTelegramMessage(message);
+}
 
-  if (text.startsWith("/help") || text.startsWith("/")) {
-    await send(chat.id, BOT_HELP_TEXT);
+async function handleCallbackQuery(query: TelegramCallbackQuery): Promise<void> {
+  const chat = query.message?.chat;
+  const messageId = query.message?.message_id;
+  const data = query.data?.trim();
+  if (!chat?.id || !data) {
+    if (query.id) await answerTelegramCallback(query.id);
     return;
   }
 
-  if (!text) {
-    const isNew = addTelegramAdmin(chat);
-    if (isNew) await send(chat.id, BOT_ADMIN_CONNECTED_TEXT);
+  addTelegramAdmin(chat);
+  const result = handleCallback(data, chat.id);
+  await answerTelegramCallback(query.id);
+
+  if (!result) {
+    await reply(chat.id, "Не удалось выполнить действие.");
+    return;
   }
+
+  if (messageId && result.options?.replyMarkup && !result.options.replyMarkup.keyboard) {
+    try {
+      await editTelegramMessage(chat.id, messageId, result.text, result.options);
+      return;
+    } catch {
+      /* отправим новым сообщением */
+    }
+  }
+
+  await reply(chat.id, result);
+}
+
+/** Бот-админка: заявки + каталог. Без TELEGRAM_CHAT_ID. */
+export async function handleTelegramMessage(message: TelegramUpdateMessage): Promise<void> {
+  const chat = message.chat;
+  const text = message.text?.trim() ?? "";
+
+  addTelegramAdmin(chat);
+
+  if (isStartCommand(text) || !text) {
+    await reply(chat.id, addTelegramAdmin(chat) ? BOT_ADMIN_CONNECTED_TEXT : BOT_ALREADY_CONNECTED_TEXT);
+    return;
+  }
+
+  if (text === BTN_HELP || text === "/help") {
+    await reply(chat.id, BOT_HELP_TEXT);
+    return;
+  }
+
+  const menu = handleMenuButton(text, chat.id);
+  if (menu) {
+    await reply(chat.id, menu);
+    return;
+  }
+
+  const sessionReply = handleSessionText(chat.id, text);
+  if (sessionReply) {
+    await reply(chat.id, sessionReply);
+    return;
+  }
+
+  if (text.startsWith("/")) {
+    await reply(chat.id, BOT_HELP_TEXT);
+    return;
+  }
+
+  if (!MENU_BUTTONS.has(text) && text.length >= 2) {
+    resetSession(chat.id);
+    await reply(chat.id, buildSearchReply(text));
+    return;
+  }
+
+  await reply(chat.id, BOT_HELP_TEXT);
 }

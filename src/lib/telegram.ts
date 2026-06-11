@@ -20,6 +20,11 @@ export function isTelegramConfiguredForLeads(): boolean {
   return !!getTelegramToken() && getLeadRecipientChatIds().length > 0;
 }
 
+export type TelegramSendOptions = {
+  html?: boolean;
+  replyMarkup?: Record<string, unknown>;
+};
+
 async function callTelegram(body: Record<string, unknown>): Promise<void> {
   const data = await telegramApi("sendMessage", body);
   if (!data.ok) {
@@ -30,7 +35,7 @@ async function callTelegram(body: Record<string, unknown>): Promise<void> {
 export async function sendTelegramToChat(
   chatId: string | number,
   text: string,
-  options?: { html?: boolean },
+  options?: TelegramSendOptions,
 ): Promise<void> {
   if (!getTelegramToken()) throw new Error("TELEGRAM_BOT_TOKEN не задан");
 
@@ -38,16 +43,44 @@ export async function sendTelegramToChat(
     chat_id: chatId,
     text,
     ...(options?.html ? { parse_mode: "HTML", disable_web_page_preview: true } : {}),
+    ...(options?.replyMarkup ? { reply_markup: options.replyMarkup } : {}),
   });
 }
 
-/** Заявки с сайта — всем админам бота (кто нажал /start) */
+export async function editTelegramMessage(
+  chatId: string | number,
+  messageId: number,
+  text: string,
+  options?: TelegramSendOptions,
+): Promise<void> {
+  if (!getTelegramToken()) throw new Error("TELEGRAM_BOT_TOKEN не задан");
+
+  const data = await telegramApi("editMessageText", {
+    chat_id: chatId,
+    message_id: messageId,
+    text,
+    ...(options?.html ? { parse_mode: "HTML", disable_web_page_preview: true } : {}),
+    ...(options?.replyMarkup ? { reply_markup: options.replyMarkup } : {}),
+  });
+  if (!data.ok) {
+    throw new Error(data.description ?? "editMessageText error");
+  }
+}
+
+export async function answerTelegramCallback(callbackQueryId: string, text?: string): Promise<void> {
+  await telegramApi("answerCallbackQuery", {
+    callback_query_id: callbackQueryId,
+    ...(text ? { text, show_alert: false } : {}),
+  });
+}
+
+/** Заявки с сайта — всем, кто нажал /start в боте */
 export async function sendTelegramMessage(text: string): Promise<void> {
   if (!getTelegramToken()) throw new Error("TELEGRAM_BOT_TOKEN не задан");
 
   const admins = getLeadRecipientChatIds();
   if (admins.length === 0) {
-    throw new Error("Админ не подключён: напишите боту /start");
+    throw new Error("Никто не подключён: напишите боту /start");
   }
 
   const errors: string[] = [];
@@ -64,29 +97,27 @@ export async function sendTelegramMessage(text: string): Promise<void> {
 }
 
 export const BOT_ADMIN_CONNECTED_TEXT = [
-  "Вы подключены как администратор.",
+  "Админка подключена.",
   "",
-  "Заявки с сайта Профсталь-инвест будут приходить в этот чат.",
-  "Доступ открытый — каждый, кто запускает бота, получает те же уведомления.",
-  "",
-  "Админка каталога на сайте: /admin",
-  "/help — справка",
+  "• Заявки с сайта — сюда",
+  "• 📋 Каталог — товары",
+  "• ➕ Новый товар — добавить",
+  "• 🔍 Найти — поиск",
 ].join("\n");
 
-export const BOT_ALREADY_CONNECTED_TEXT = [
-  "Вы уже подключены.",
-  "",
-  "Заявки с сайта приходят в этот чат.",
-  "/help — справка",
-].join("\n");
+export const BOT_ALREADY_CONNECTED_TEXT = "Вы подключены. Заявки и каталог — кнопками ниже.";
 
 export const BOT_HELP_TEXT = [
-  "Профсталь-инвест — бот уведомлений.",
+  "Бот-админка Профсталь-инвест.",
   "",
-  "Открытый доступ: нажмите /start или напишите любое сообщение — вы админ.",
+  "Заявки с сайта приходят автоматически.",
   "",
-  "Заявки с сайта приходят всем подключённым.",
-  "Каталог на сайте: /admin",
+  "📋 Каталог — просмотр и редактирование",
+  "➕ Новый товар — добавление",
+  "🔍 Найти — поиск по артикулу или названию",
+  "",
+  "В карточке товара: цена, название, наличие, удаление.",
+  "TELEGRAM_CHAT_ID не нужен — достаточно /start.",
 ].join("\n");
 
 export function formatLeadTelegramMessage(payload: {
@@ -112,7 +143,7 @@ export function formatLeadTelegramMessage(payload: {
     : "";
 
   return [
-    "<b>Новая заявка — Профсталь-инвест</b>",
+    "<b>🆕 Новая заявка</b>",
     "",
     `<b>Имя:</b> ${escapeHtml(payload.name || "—")}`,
     `<b>Телефон:</b> ${escapeHtml(payload.phone)}`,

@@ -1,15 +1,7 @@
 import type { APIRoute } from "astro";
-import { handleTelegramMessage } from "@/lib/telegram-bot";
-import { sendTelegramToChat } from "@/lib/telegram";
+import { handleTelegramUpdate } from "@/lib/telegram-bot";
 
 export const prerender = false;
-
-interface TelegramUpdate {
-  message?: {
-    chat: { id: number; username?: string; first_name?: string };
-    text?: string;
-  };
-}
 
 export const POST: APIRoute = async ({ request }) => {
   const secret = import.meta.env.TELEGRAM_WEBHOOK_SECRET?.trim();
@@ -20,20 +12,15 @@ export const POST: APIRoute = async ({ request }) => {
     }
   }
 
-  let update: TelegramUpdate;
+  let update: Parameters<typeof handleTelegramUpdate>[0];
   try {
     update = await request.json();
   } catch {
     return new Response("Bad request", { status: 400 });
   }
 
-  const message = update.message;
-  if (!message?.chat?.id) {
-    return new Response(JSON.stringify({ ok: true }), { status: 200 });
-  }
-
   try {
-    await handleTelegramMessage(message, (chatId, text) => sendTelegramToChat(chatId, text));
+    await handleTelegramUpdate(update);
   } catch (error) {
     console.error("[telegram webhook]", error);
   }
