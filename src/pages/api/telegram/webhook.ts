@@ -1,14 +1,18 @@
 import type { APIRoute } from "astro";
+import { readServerEnv } from "@/lib/runtime-env";
 import { handleTelegramUpdate } from "@/lib/telegram-bot";
 
 export const prerender = false;
 
-function readWebhookSecret(): string | undefined {
-  return process.env.TELEGRAM_WEBHOOK_SECRET?.trim() || import.meta.env.TELEGRAM_WEBHOOK_SECRET?.trim();
-}
-
 export const POST: APIRoute = async ({ request }) => {
-  const secret = readWebhookSecret();
+  const secret = readServerEnv("TELEGRAM_WEBHOOK_SECRET");
+  const mode = (process.env.TELEGRAM_MODE ?? "poll").trim().toLowerCase();
+  const isProd = process.env.NODE_ENV === "production";
+
+  if (mode === "webhook" && isProd && !secret) {
+    return new Response("Webhook secret required", { status: 503 });
+  }
+
   if (secret) {
     const header = request.headers.get("X-Telegram-Bot-Api-Secret-Token");
     if (header !== secret) {

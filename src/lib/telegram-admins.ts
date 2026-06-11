@@ -1,5 +1,6 @@
-import { readFileSync, writeFileSync, existsSync, mkdirSync } from "node:fs";
-import { dirname, join } from "node:path";
+import { existsSync } from "node:fs";
+import { join } from "node:path";
+import { readJsonFile, writeJsonFile } from "./json-file";
 
 export interface TelegramAdmin {
   chatId: number;
@@ -13,15 +14,17 @@ const LEGACY = join(process.cwd(), "data", "telegram-subscribers.json");
 
 function readList(): TelegramAdmin[] {
   if (existsSync(FILE)) {
-    return JSON.parse(readFileSync(FILE, "utf-8")) as TelegramAdmin[];
+    return readJsonFile<TelegramAdmin[]>(FILE, []);
   }
   if (existsSync(LEGACY)) {
-    const legacy = JSON.parse(readFileSync(LEGACY, "utf-8")) as Array<{
+    const legacy = readJsonFile<
+      Array<{
       chatId: number;
       username?: string;
       firstName?: string;
       subscribedAt?: string;
-    }>;
+      }>
+    >(LEGACY, []);
     return legacy.map((item) => ({
       chatId: item.chatId,
       username: item.username,
@@ -33,8 +36,7 @@ function readList(): TelegramAdmin[] {
 }
 
 function writeList(list: TelegramAdmin[]): void {
-  mkdirSync(dirname(FILE), { recursive: true });
-  writeFileSync(FILE, `${JSON.stringify(list, null, 2)}\n`, "utf-8");
+  writeJsonFile(FILE, list);
 }
 
 export function loadTelegramAdmins(): TelegramAdmin[] {

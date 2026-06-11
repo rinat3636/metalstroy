@@ -1,13 +1,17 @@
 ---
+export const prerender = false;
+
 import Layout from "@/layouts/Layout.astro";
 import Breadcrumbs from "@/components/Breadcrumbs.astro";
 import { cities } from "@/lib/data";
+import { absoluteUrl } from "@/lib/seo";
 import { subdomainUrl } from "@/lib/subdomains";
 ---
 
 <Layout
   title="Города поставки металлопроката"
   description="Поставка металлопроката и стройматериалов по городам ДНР: Донецк, Макеевка, Горловка и другие."
+  canonical={absoluteUrl("/cities/")}
 >
   <div class="page-header">
     <div class="container">

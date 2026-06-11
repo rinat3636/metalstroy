@@ -1,7 +1,7 @@
 import type { APIRoute } from "astro";
 import type { LeadPayload } from "@/lib/types";
+import { readServerEnv } from "@/lib/runtime-env";
 import {
-  formatLeadTelegramMessage,
   getBotPublicLabel,
   isTelegramConfiguredForLeads,
   sendLeadTelegramMessage,
@@ -31,7 +31,7 @@ function isValidPhone(phone: string): boolean {
 }
 
 async function sendCrm(payload: LeadPayload): Promise<void> {
-  const webhook = import.meta.env.CRM_WEBHOOK_URL?.trim();
+  const webhook = readServerEnv("CRM_WEBHOOK_URL");
   if (!webhook) return;
   const response = await fetch(webhook, {
     method: "POST",

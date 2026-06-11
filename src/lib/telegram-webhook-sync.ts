@@ -29,6 +29,10 @@ export async function syncTelegramWebhook(): Promise<boolean> {
 
   const webhookUrl = `${baseUrl}/api/telegram/webhook`;
   const secret = readEnv("TELEGRAM_WEBHOOK_SECRET");
+  if (!secret && process.env.NODE_ENV === "production") {
+    console.error("[telegram] Webhook: задайте TELEGRAM_WEBHOOK_SECRET в production");
+    return false;
+  }
 
   const result = await telegramApi("setWebhook", {
     url: webhookUrl,

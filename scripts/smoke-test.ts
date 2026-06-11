@@ -4,7 +4,6 @@ import { fileURLToPath } from "node:url";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const BASE = process.env.BASE_URL ?? "http://localhost:4321";
-const ADMIN = process.env.ADMIN_PASSWORD ?? "profstal2024";
 
 function loadEnv(): Record<string, string> {
   const envPath = join(__dirname, "..", ".env");
@@ -21,6 +20,7 @@ function loadEnv(): Record<string, string> {
 }
 
 const env = loadEnv();
+const ADMIN = process.env.ADMIN_PASSWORD ?? env.ADMIN_PASSWORD ?? "";
 const results: { name: string; ok: boolean; detail?: string }[] = [];
 
 function check(name: string, ok: boolean, detail = "") {
@@ -69,43 +69,47 @@ async function main() {
   const noAuth = await request("GET", "/api/admin/products");
   check("Admin without auth -> 401", noAuth.status === 401);
 
-  const search = await request("GET", "/api/admin/products?q=" + encodeURIComponent("МТЛ-20118"), undefined, true);
-  const found = (search.data.products as unknown[])?.length ?? 0;
-  check("Admin search by SKU", search.status === 200 && found >= 1, `found=${found}`);
+  if (!ADMIN) {
+    console.log("[SKIP] Admin CRUD — задайте ADMIN_PASSWORD");
+  } else {
+    const search = await request("GET", "/api/admin/products?q=" + encodeURIComponent("МТЛ-20118"), undefined, true);
+    const found = (search.data.products as unknown[])?.length ?? 0;
+    check("Admin search by SKU", search.status === 200 && found >= 1, `found=${found}`);
 
-  const one = await request("GET", "/api/admin/products?sku=" + encodeURIComponent("МТЛ-20118"), undefined, true);
-  const product = one.data.product as { sku?: string } | undefined;
-  check("Admin get by SKU", one.status === 200 && product?.sku === "МТЛ-20118");
+    const one = await request("GET", "/api/admin/products?sku=" + encodeURIComponent("МТЛ-20118"), undefined, true);
+    const product = one.data.product as { sku?: string } | undefined;
+    check("Admin get by SKU", one.status === 200 && product?.sku === "МТЛ-20118");
 
-  const payload = {
-    title: "Тестовый товар автотест",
-    category: "Крепеж",
-    categorySlug: "krepezh",
-    subcategory: "",
-    price: 100,
-    stock: "on_order",
-    specsRaw: "Тест: 1 шт",
-    description: "Автотест — удалить",
-  };
+    const payload = {
+      title: "Тестовый товар автотест",
+      category: "Крепеж",
+      categorySlug: "krepezh",
+      subcategory: "",
+      price: 100,
+      stock: "on_order",
+      specsRaw: "Тест: 1 шт",
+      description: "Автотест — удалить",
+    };
 
-  const created = await request("POST", "/api/admin/products", payload, true);
-  const sku = (created.data.product as { sku?: string } | undefined)?.sku;
-  check("Create product", created.status === 201 && !!sku?.startsWith("МТЛ-"), sku ?? JSON.stringify(created.data));
+    const created = await request("POST", "/api/admin/products", payload, true);
+    const sku = (created.data.product as { sku?: string } | undefined)?.sku;
+    check("Create product", created.status === 201 && !!sku?.startsWith("МТЛ-"), sku ?? JSON.stringify(created.data));
 
-  if (sku) {
-    const updated = await request("PUT", `/api/admin/products/${encodeURIComponent(sku)}`, {
-      ...payload,
-      title: "Тестовый товар изменён",
-    }, true);
-    const updatedTitle = (updated.data.product as { title?: string } | undefined)?.title ?? "";
-    check("Update product", updated.status === 200 && updatedTitle.includes("изменён"));
+    if (sku) {
+      const updated = await request("PUT", `/api/admin/products/${encodeURIComponent(sku)}`, {
+        ...payload,
+        title: "Тестовый товар изменён",
+      }, true);
+      const updatedTitle = (updated.data.product as { title?: string } | undefined)?.title ?? "";
+      check("Update product", updated.status === 200 && updatedTitle.includes("изменён"));
 
-    const afterCreate = await request("GET", "/api/products");
-    const skus = ((afterCreate.data.products as { sku: string }[]) ?? []).map((p) => p.sku);
-    check("Product visible in catalog API", skus.includes(sku));
+      const afterCreate = await request("GET", "/api/products");
+      const skus = ((afterCreate.data.products as { sku: string }[]) ?? []).map((p) => p.sku);
+      check("Product visible in catalog API", skus.includes(sku));
 
-    const deleted = await request("DELETE", `/api/admin/products/${encodeURIComponent(sku)}`, undefined, true);
-    check("Delete product", deleted.status === 200 && deleted.data.ok === true);
+      const deleted = await request("DELETE", `/api/admin/products/${encodeURIComponent(sku)}`, undefined, true);
+      check("Delete product", deleted.status === 200 && deleted.data.ok === true);
+    }
   }
 
   const lead = await request("POST", "/api/lead", {

@@ -1,4 +1,5 @@
 import type { APIRoute } from "astro";
+import { readServerEnv } from "@/lib/runtime-env";
 import { getTelegramAdminChatIds } from "@/lib/telegram-admins";
 import { getTelegramBotToken, telegramApi } from "@/lib/telegram-api";
 import { getTelegramDataPaths } from "@/lib/telegram-data-paths";
@@ -8,8 +9,23 @@ import { getTelegramBotStatus } from "@/lib/telegram-server";
 
 export const prerender = false;
 
-/** Диагностика бота (без секретов). GET /api/telegram/status */
-export const GET: APIRoute = async () => {
+function isStatusAuthorized(request: Request): boolean {
+  const token = readServerEnv("TELEGRAM_STATUS_TOKEN");
+  if (!token) return true;
+  const url = new URL(request.url);
+  if (url.searchParams.get("token") === token) return true;
+  const auth = request.headers.get("Authorization");
+  return auth === `Bearer ${token}`;
+}
+
+/** Диагностика бота. GET /api/telegram/status (?token= если задан TELEGRAM_STATUS_TOKEN) */
+export const GET: APIRoute = async ({ request }) => {
+  if (!isStatusAuthorized(request)) {
+    return new Response(JSON.stringify({ error: "Нет доступа" }), {
+      status: 403,
+      headers: { "Content-Type": "application/json" },
+    });
+  }
   const status = getTelegramBotStatus();
   const token = getTelegramBotToken();
   const dataPaths = getTelegramDataPaths();

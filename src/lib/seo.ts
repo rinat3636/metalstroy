@@ -164,13 +164,7 @@ export function listAllSitemapUrls(): SitemapEntry[] {
   push("/about/", "0.6");
   push("/delivery/", "0.6");
 
-  for (const city of cities) {
-    entries.push({ loc: subdomainUrl(city.slug), priority: "0.9", changefreq: "weekly" });
-  }
-
-  for (const category of getCategories()) {
-    entries.push({ loc: subdomainUrl(category.slug), priority: "0.88", changefreq: "weekly" });
-  }
+  // Корни поддоменов городов/категорий — в sitemap-subdomains.xml (без дублей)
 
   for (const { city, category } of listCityCategoryPairs()) {
     entries.push({

@@ -1,5 +1,7 @@
+import { readServerEnv } from "./runtime-env";
+
 export function isAdminAuthorized(request: Request): boolean {
-  const password = import.meta.env.ADMIN_PASSWORD?.trim();
+  const password = readServerEnv("ADMIN_PASSWORD");
   if (!password) return false;
 
   const auth = request.headers.get("Authorization");

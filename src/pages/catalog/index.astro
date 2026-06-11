@@ -1,4 +1,6 @@
 ---
+export const prerender = false;
+
 import Layout from "@/layouts/Layout.astro";
 import CatalogBrowser from "@/components/CatalogBrowser";
 import Breadcrumbs from "@/components/Breadcrumbs.astro";
@@ -64,7 +66,7 @@ const itemListSchema = {
           Горловке и другим городам региона.
         </p>
       </div>
-      <CatalogBrowser client:visible />
+      <CatalogBrowser client:visible products={products} />
     </div>
   </section>
 </Layout>

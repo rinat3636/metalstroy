@@ -1,5 +1,5 @@
-import { readFileSync, writeFileSync, existsSync, mkdirSync } from "node:fs";
-import { dirname, join } from "node:path";
+import { join } from "node:path";
+import { readJsonFile, writeJsonFile } from "./json-file";
 const FILE = join(process.cwd(), "data", "telegram-sessions.json");
 const TTL_MS = 30 * 60 * 1000;
 
@@ -11,17 +11,11 @@ interface StoredSession {
 type SessionFile = Record<string, StoredSession>;
 
 function readFile(): SessionFile {
-  if (!existsSync(FILE)) return {};
-  try {
-    return JSON.parse(readFileSync(FILE, "utf-8")) as SessionFile;
-  } catch {
-    return {};
-  }
+  return readJsonFile<SessionFile>(FILE, {});
 }
 
 function writeFile(data: SessionFile): void {
-  mkdirSync(dirname(FILE), { recursive: true });
-  writeFileSync(FILE, `${JSON.stringify(data, null, 2)}\n`, "utf-8");
+  writeJsonFile(FILE, data);
 }
 
 function prune(data: SessionFile): SessionFile {

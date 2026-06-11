@@ -49,7 +49,7 @@ const stockClass =
   product.stock === "in_stock" ? "badge badge--ok" :
   product.stock === "on_order" ? "badge badge--warn" : "badge badge--no";
 
-const productSchema = buildProductSchema(product, category, productGlobalUrl, imageAbsolute, site);
+const productSchema = buildProductSchema(product, category, canonical, imageAbsolute, site);
 const breadcrumbSchema = buildBreadcrumbSchema([
   { name: "Главная", href: absoluteUrl("/") },
   { name: "Города", href: absoluteUrl("/cities/") },

@@ -1,5 +1,5 @@
-import { readFileSync, writeFileSync, existsSync, mkdirSync } from "node:fs";
-import { dirname, join } from "node:path";
+import { join } from "node:path";
+import { readJsonFile, writeJsonFile } from "./json-file";
 
 const FILE = join(process.cwd(), "data", "telegram-audit-log.json");
 const MAX_ENTRIES = 100;
@@ -12,17 +12,11 @@ export interface TelegramAuditEntry {
 }
 
 function readEntries(): TelegramAuditEntry[] {
-  if (!existsSync(FILE)) return [];
-  try {
-    return JSON.parse(readFileSync(FILE, "utf-8")) as TelegramAuditEntry[];
-  } catch {
-    return [];
-  }
+  return readJsonFile<TelegramAuditEntry[]>(FILE, []);
 }
 
 function writeEntries(entries: TelegramAuditEntry[]): void {
-  mkdirSync(dirname(FILE), { recursive: true });
-  writeFileSync(FILE, `${JSON.stringify(entries.slice(-MAX_ENTRIES), null, 2)}\n`, "utf-8");
+  writeJsonFile(FILE, entries.slice(-MAX_ENTRIES));
 }
 
 export function logTelegramCatalogAction(chatId: number, action: string, sku?: string): void {

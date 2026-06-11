@@ -1,13 +1,19 @@
 ---
+export const prerender = false;
+
 import Layout from "@/layouts/Layout.astro";
 import Breadcrumbs from "@/components/Breadcrumbs.astro";
-import { cities, site } from "@/lib/data";
+import { cities, loadSite } from "@/lib/data";
+import { absoluteUrl } from "@/lib/seo";
 import { withBase } from "@/lib/paths";
+
+const site = loadSite();
 ---
 
 <Layout
   title="Доставка и сервис"
   description="Подбор по размерам, резка, доставка металлопроката по ДНР. Профсталь-инвест — самовывоз и доставка по согласованию."
+  canonical={absoluteUrl("/delivery/")}
 >
   <div class="page-header">
     <div class="container">

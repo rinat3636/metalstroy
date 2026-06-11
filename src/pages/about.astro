@@ -1,15 +1,21 @@
 ---
+export const prerender = false;
+
 import Layout from "@/layouts/Layout.astro";
 import Breadcrumbs from "@/components/Breadcrumbs.astro";
-import { categories, site } from "@/lib/data";
-import { loadProducts } from "@/lib/catalog-live";
+import { loadSite } from "@/lib/data";
+import { loadCategories, loadProducts } from "@/lib/catalog-live";
+import { absoluteUrl } from "@/lib/seo";
 
+const site = loadSite();
 const products = loadProducts();
+const categories = loadCategories();
 ---
 
 <Layout
   title="О компании"
   description={`${site.name} — поставка металлопроката и стройматериалов в ДНР для частных клиентов, подрядчиков и организаций.`}
+  canonical={absoluteUrl("/about/")}
 >
   <div class="page-header">
     <div class="container">
