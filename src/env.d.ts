@@ -10,6 +10,8 @@ interface ImportMetaEnv {
   readonly PUBLIC_SITE_KPP: string;
   readonly PUBLIC_SITE_OGRN: string;
   readonly PUBLIC_YANDEX_METRIKA_ID: string;
+  readonly PUBLIC_YANDEX_VERIFICATION: string;
+  readonly PUBLIC_YANDEX_MAP_IFRAME: string;
   readonly TELEGRAM_BOT_TOKEN: string;
   readonly TELEGRAM_PROXY: string;
   readonly TELEGRAM_WEBHOOK_SECRET: string;

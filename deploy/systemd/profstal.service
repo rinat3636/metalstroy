@@ -1,0 +1,15 @@
+[Unit]
+Description=Профсталь-инвест (Astro + Telegram bot)
+After=network.target
+
+[Service]
+Type=simple
+User=www-data
+WorkingDirectory=/var/www/profstal
+EnvironmentFile=/var/www/profstal/.env
+ExecStart=/usr/bin/npm start
+Restart=on-failure
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target

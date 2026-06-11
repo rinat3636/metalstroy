@@ -1,4 +1,5 @@
 import { withBase } from "./paths";
+import { readPublicEnv } from "./runtime-env";
 import { loadSiteSettings } from "./site-store";
 import productsData from "@/data/products.json";
 import categoriesData from "@/data/categories.json";
@@ -14,13 +15,13 @@ const STATIC_SITE = {
   name: "Профсталь-инвест",
   tagline: "Металлопрокат и стройматериалы в ДНР",
   addressNote: "Точный адрес склада и схема проезда — после подтверждения заказа",
-  metrikaId: import.meta.env.PUBLIC_YANDEX_METRIKA_ID ?? "",
-  telegram: import.meta.env.PUBLIC_SITE_TELEGRAM ?? "https://t.me/proffinvest23_bot",
-  whatsapp: import.meta.env.PUBLIC_SITE_WHATSAPP ?? "https://wa.me/79490000000",
-  yandexMaps: import.meta.env.PUBLIC_YANDEX_MAPS_URL ?? "",
-  gis2: import.meta.env.PUBLIC_2GIS_URL ?? "",
-  geoLat: import.meta.env.PUBLIC_SITE_GEO_LAT ?? "",
-  geoLng: import.meta.env.PUBLIC_SITE_GEO_LNG ?? "",
+  metrikaId: readPublicEnv("PUBLIC_YANDEX_METRIKA_ID"),
+  telegram: readPublicEnv("PUBLIC_SITE_TELEGRAM") || "https://t.me/proffinvest23_bot",
+  whatsapp: readPublicEnv("PUBLIC_SITE_WHATSAPP") || "https://wa.me/79490000000",
+  yandexMaps: readPublicEnv("PUBLIC_YANDEX_MAPS_URL"),
+  gis2: readPublicEnv("PUBLIC_2GIS_URL"),
+  geoLat: readPublicEnv("PUBLIC_SITE_GEO_LAT"),
+  geoLng: readPublicEnv("PUBLIC_SITE_GEO_LNG"),
 };
 
 /** Актуальные контакты и реквизиты (бот пишет в data/site-settings.json) */

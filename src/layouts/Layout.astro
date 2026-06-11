@@ -8,6 +8,8 @@ import Analytics from "@/components/Analytics.astro";
 import { loadSite } from "@/lib/data";
 import { withBase } from "@/lib/paths";
 import { buildWebSiteSchema } from "@/lib/seo";
+import { getYandexConfig } from "@/lib/yandex-config";
+import { getSiteOrigin } from "@/lib/subdomains";
 
 interface Props {
   title: string;
@@ -29,6 +31,8 @@ const {
   ogType = "website",
 } = Astro.props;
 const site = loadSite();
+const yandex = getYandexConfig();
+const siteOrigin = getSiteOrigin();
 const fullTitle = title.includes(site.name) ? title : `${title} — ${site.name}`;
 const canonicalUrl = canonical ?? Astro.url.href.split("?")[0];
 const ogImageUrl = ogImage
@@ -38,6 +42,7 @@ const ogImageUrl = ogImage
 const orgSchema: Record<string, unknown> = {
   "@context": "https://schema.org",
   "@type": "LocalBusiness",
+  "@id": `${siteOrigin}/#organization`,
   name: site.name,
   legalName: site.legalName,
   description: site.tagline,
@@ -46,6 +51,7 @@ const orgSchema: Record<string, unknown> = {
   image: new URL(withBase("/assets/hero-warehouse.jpg"), Astro.site).href,
   address: {
     "@type": "PostalAddress",
+    addressLocality: "Донецк",
     addressRegion: "ДНР",
     addressCountry: "RU",
     streetAddress: site.address,
@@ -56,8 +62,12 @@ const orgSchema: Record<string, unknown> = {
   },
   openingHours: "Mo-Sa 08:00-18:00",
   priceRange: "₽₽",
-  url: Astro.site,
+  url: siteOrigin,
 };
+
+if (site.yandexMaps) {
+  orgSchema.hasMap = site.yandexMaps;
+}
 
 if (site.geoLat && site.geoLng) {
   orgSchema.geo = {
@@ -83,6 +93,9 @@ const jsonLd = [orgSchema, websiteSchema, ...(schema ? (Array.isArray(schema) ? 
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>{fullTitle}</title>
     <meta name="description" content={description} />
+    {yandex.verification && <meta name="yandex-verification" content={yandex.verification} />}
+    <meta name="geo.region" content="RU-DON" />
+    <meta name="geo.placename" content="Донецк" />
     {noindex && <meta name="robots" content="noindex, nofollow" />}
     <meta name="theme-color" content="#1a1f26" />
     <link rel="canonical" href={canonicalUrl} />

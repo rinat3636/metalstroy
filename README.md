@@ -2,11 +2,35 @@
 
 Сайт на Astro: каталог металлопроката и стройматериалов, региональное SEO, список заявки и отправка лидов в Telegram.
 
+## Деплой на VPS Reg.ru (рекомендуется)
+
+Полная инструкция: **[docs/deploy-vps-regru.md](docs/deploy-vps-regru.md)**
+
+```bash
+git clone https://github.com/rinat3636/metalstroy.git /var/www/profstal
+cd /var/www/profstal
+cp .env.example .env   # заполнить токены и Яндекс
+docker compose up -d --build
+```
+
+Nginx + SSL: `deploy/nginx/ps-invest.ru.conf`
+
+**Яндекс** (Вебмастер, Метрика, Карты): **[docs/yandex-setup.md](docs/yandex-setup.md)**
+
+В `.env` на сервере:
+```
+PUBLIC_SITE_URL=https://ps-invest.ru
+PUBLIC_SITE_DOMAIN=ps-invest.ru
+PUBLIC_YANDEX_METRIKA_ID=...
+PUBLIC_YANDEX_VERIFICATION=...
+TELEGRAM_BOT_TOKEN=...
+```
+
+Sitemap для Вебмастера: `https://ps-invest.ru/sitemap-index.xml`
+
 ## Репозиторий
 
 Код: [rinat3636/metalstroy](https://github.com/rinat3636/metalstroy)
-
-Загрузка в GitHub:
 
 ```powershell
 $env:GITHUB_TOKEN = "ваш_токен"

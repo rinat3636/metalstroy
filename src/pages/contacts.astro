@@ -2,9 +2,11 @@
 import Layout from "@/layouts/Layout.astro";
 import Breadcrumbs from "@/components/Breadcrumbs.astro";
 import LeadForm from "@/components/LeadForm";
+import YandexMap from "@/components/YandexMap.astro";
 import { loadSite } from "@/lib/data";
 
 const site = loadSite();
+const hasReq = site.inn || site.kpp || site.ogrn;
 ---
 
 <Layout
@@ -55,12 +57,20 @@ const site = loadSite();
         <h3>Для юрлиц</h3>
         <p>
           {site.legalName}<br />
-          Счёт и закрывающие документы — при оформлении заказа.<br />
-          Полные реквизиты вышлет менеджер.
+          {hasReq && (
+            <>
+              {site.inn && <>ИНН: {site.inn}<br /></>}
+              {site.kpp && <>КПП: {site.kpp}<br /></>}
+              {site.ogrn && <>ОГРН: {site.ogrn}<br /></>}
+            </>
+          )}
+          Счёт и закрывающие документы — при оформлении заказа.
         </p>
       </article>
     </div>
   </section>
+
+  <YandexMap />
 
   <section class="section request-section">
     <div class="container request-grid">

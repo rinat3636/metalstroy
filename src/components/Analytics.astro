@@ -1,19 +1,34 @@
 ---
-import { site } from "@/lib/data";
-const metrikaId = site.metrikaId;
+import { getYandexConfig } from "@/lib/yandex-config";
+
+const { metrikaId } = getYandexConfig();
 ---
 
 {metrikaId && (
-  <script is:inline define:vars={{ metrikaId }}>
-    (function(m,e,t,r,i,k,a){
-      m[i]=m[i]||function(){(m[i].a=m[i].a||[]).push(arguments)};
-      m[i].l=1*new Date();
-      for (var j = 0; j < document.scripts.length; j++) {if (document.scripts[j].src === r) { return; }}
-      k=e.createElement(t),a=e.getElementsByTagName(t)[0],k.async=1,k.src=r,a.parentNode.insertBefore(k,a)
-    })(window, document,'script','https://mc.yandex.ru/metrika/tag.js', 'ym');
-    window.__metrikaId = metrikaId;
-    ym(metrikaId, 'init', { clickmap:true, trackLinks:true, accurateTrackBounce:true, webvisor:true });
-  </script>
+  <>
+    <script is:inline define:vars={{ metrikaId }}>
+      (function(m,e,t,r,i,k,a){
+        m[i]=m[i]||function(){(m[i].a=m[i].a||[]).push(arguments)};
+        m[i].l=1*new Date();
+        for (var j = 0; j < document.scripts.length; j++) {if (document.scripts[j].src === r) { return; }}
+        k=e.createElement(t),a=e.getElementsByTagName(t)[0],k.async=1,k.src=r,a.parentNode.insertBefore(k,a)
+      })(window, document,'script','https://mc.yandex.ru/metrika/tag.js', 'ym');
+      window.__metrikaId = metrikaId;
+      ym(metrikaId, 'init', {
+        clickmap: true,
+        trackLinks: true,
+        accurateTrackBounce: true,
+        webvisor: true,
+        trackHash: false,
+        ecommerce: false,
+      });
+    </script>
+    <noscript>
+      <div>
+        <img src={`https://mc.yandex.ru/watch/${metrikaId}`} style="position:absolute; left:-9999px;" alt="" />
+      </div>
+    </noscript>
+  </>
 )}
 
 <script is:inline>
@@ -21,6 +36,12 @@ const metrikaId = site.metrikaId;
     const target = e.target.closest("[data-goal]");
     if (!target) return;
     const goal = target.getAttribute("data-goal");
+    if (typeof ym === "function" && window.__metrikaId && goal) {
+      try { ym(window.__metrikaId, "reachGoal", goal); } catch {}
+    }
+  });
+  window.addEventListener("analytics-goal", (e) => {
+    const goal = e.detail;
     if (typeof ym === "function" && window.__metrikaId && goal) {
       try { ym(window.__metrikaId, "reachGoal", goal); } catch {}
     }

@@ -1,20 +1,7 @@
 import type { APIRoute } from "astro";
-import { statSync } from "node:fs";
-import { join } from "node:path";
-import { absoluteUrl, listAllSitemapUrls, listCityProductSitemapUrls, type SitemapEntry } from "@/lib/seo";
-import { loadProducts } from "@/lib/product-store";
-import { productCanonicalUrl } from "@/lib/product-seo";
+import { listAllSitemapUrls, type SitemapEntry } from "@/lib/seo";
 
 export const prerender = false;
-
-function catalogLastmod(): string {
-  try {
-    const path = join(process.cwd(), "src/data/products.json");
-    return statSync(path).mtime.toISOString().split("T")[0];
-  } catch {
-    return new Date().toISOString().split("T")[0];
-  }
-}
 
 function renderUrl(entry: SitemapEntry): string {
   const lastmod = entry.lastmod ? `\n    <lastmod>${entry.lastmod}</lastmod>` : "";
@@ -25,19 +12,9 @@ function renderUrl(entry: SitemapEntry): string {
   </url>`;
 }
 
-/** Полная SEO-карта: канонические URL, поддомены, города×категории, товары */
+/** Основная SEO-карта: статика, поддомены, город×категория (товары — в отдельных sitemap) */
 export const GET: APIRoute = () => {
-  const productLastmod = catalogLastmod();
-  const entries: SitemapEntry[] = [...listAllSitemapUrls(), ...listCityProductSitemapUrls()];
-
-  for (const product of loadProducts()) {
-    entries.push({
-      loc: productCanonicalUrl(product),
-      priority: "0.8",
-      changefreq: "weekly",
-      lastmod: productLastmod,
-    });
-  }
+  const entries: SitemapEntry[] = [...listAllSitemapUrls()];
 
   const seen = new Set<string>();
   const unique = entries.filter((e) => {
